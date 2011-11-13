@@ -1,11 +1,7 @@
-%if %_lib == lib64
-%define _requires_exceptions devel(libtcl8.4(64bit))
-%else
-%define _requires_exceptions devel(libtcl8.4)
-%endif
+%define _requires_exceptions devel(libtcl
 
-%define Werror_cflags %nil
-%define _disable_ld_no_undefined 1
+# %%define Werror_cflags %nil
+# %%define _disable_ld_no_undefined 1
 
 %define perl_version %(rpm -q --qf "%{VERSION}" perl)
 %define perl_epoch %(rpm -q --qf "%{EPOCH}" perl)
@@ -15,21 +11,11 @@
 
 %define major 5
 %define major_ecpg 6
+%define libname %mklibname pq %{major}
+%define libecpg %mklibname ecpg %{major_ecpg}
 
-%define bname postgresql
-%define current_major_version 9.0
-%define current_minor_version 5
-
-# Define if it's a beta
-# %%define beta rc2
-
-# define the mdv release
-%define rel 1
-
-%define release %mkrel %{?beta:0.rc.%{beta}.}%{rel}
-
-%define libname %mklibname pq%{current_major_version} _%{major}
-%define libecpg %mklibname ecpg%{current_major_version} _%{major_ecpg}
+%define current_major_version 9.1
+%define current_minor_version 1
 
 %define withuuid 0
 %if %mdvver >= 201100
@@ -37,14 +23,14 @@
 %endif
 
 Summary: 	PostgreSQL client programs and libraries
-Name:		%{bname}%{current_major_version}
-Version: 	%{current_major_version}%{?!beta:.%{current_minor_version}}
-Release: 	%release
+Name:		postgresql
+Version: 	9.1.1
+Release: 	%mkrel 0
 License:	BSD
 Group:		Databases
 URL:		http://www.postgresql.org/ 
-Source0:	ftp://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}%{?beta}.tar.bz2
-Source5:	ftp://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}%{?beta}.tar.bz2.md5
+Source0:	ftp://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.bz2
+Source5:	ftp://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.bz2.md5
 Source10:	postgres.profile
 Source11:	postgresql.init
 Source13:	postgresql.mdv.releasenote
@@ -67,10 +53,8 @@ BuildRequires:  ossp-uuid-devel >= 1.6.2-5
 # Need to build doc
 BuildRequires:  docbook-dtd42-sgml docbook-dtd44-xml
 BuildRequires:	openjade docbook-utils xsltproc docbook-style-xsl
-Provides:	%{bname}-virtual = %{current_major_version}
-Conflicts:	%{bname}-virtual < %{current_major_version}
-Requires:	%{libname} >= %{version}
-Provides:	%{bname} = %{version}-%{release}
+Requires:	%{libname} >= %{version}-%{release}
+Obsoletes:	postgresql9.0 postgresql8.5 postgresql8.4 postgresql8.3 postgresql8.2
 Buildroot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %description
@@ -94,11 +78,11 @@ installing the postgresql-server package.
 Summary:	The shared libraries required for any PostgreSQL clients
 Group:		System/Libraries
 Provides:	postgresql-libs = %{version}-%{release}
-Provides:	libpq = %{version}-%{release}
-Provides:	%{mklibname pq}-virtual = %{current_major_version}
-Conflicts:	postgresql-libs < %{current_major_version}
-# Avoid conflicts with lib having bad major
-Conflicts:	libpq3 = 8.0.2
+Obsoletes:	postgresql-libs < %{current_major_version}
+Obsoletes:	%{mklibname pq9.0 _5}
+Obsoletes:	%{mklibname pq8.5 _5}
+Obsoletes:	%{mklibname pq8.4 _5}
+Obsoletes:	%{mklibname pq8.3 _5}
 
 %description -n	%{libname}
 C and C++ libraries to enable user programs to communicate with the PostgreSQL
@@ -108,10 +92,12 @@ TCP/IP.
 %package -n	%{libecpg}
 Summary:	Shared library libecpg for PostgreSQL
 Group:		System/Libraries
-Requires:	postgresql%{current_major_version} >= %{version}-%{release}
-Provides:	libecpg = %{version}-%{release}
-Provides:	%{mklibname ecpg}-virtual = %{current_major_version}
-Conflicts:	libecpg < %{current_major_version}
+Requires:	postgresql >= %{version}-%{release}
+Obsoletes:	%{mklibname ecpg9.0 _6}
+Obsoletes:	%{mklibname ecpg8.5 _6}
+Obsoletes:	%{mklibname ecpg8.4 _6}
+Obsoletes:	%{mklibname ecpg8.3 _6}
+Obsoletes:	%{mklibname ecpg 5}
 
 %description -n	%{libecpg}
 Libecpg is used by programs built with ecpg (Embedded PostgreSQL for C) Use
@@ -129,15 +115,11 @@ Requires(preun): rpm-helper
 # add/del user
 Requires(pre): rpm-helper
 Requires(postun): rpm-helper
-Requires(pre):	postgresql%{current_major_version} >= %{version}-%{release}
-Requires(post):	postgresql%{current_major_version} >= %{version}-%{release}
-Conflicts:	postgresql < 7.3
-Provides:	%{?arch_tagged:%arch_tagged %{bname}-server-ABI}%{?!arch_tagged:%{bname}-server-ABI} = %{current_major_version}
-Provides:	%{bname}-server-virtual = %{current_major_version}
-Conflicts:	%{bname}-server-virtual < %{current_major_version}
-Provides:	%{bname}-server = %{version}-%{release}
-Conflicts:	%{bname}8.3-test < %{version}-%{release}
-Requires:   postgresql-plpgsql >= %{version}-%{release}
+Requires(pre):	postgresql >= %{version}-%{release}
+Requires(post):	postgresql >= %{version}-%{release}
+Provides:	%{?arch_tagged:%arch_tagged %{name}-server-ABI}%{?!arch_tagged:%{name}-server-ABI} = %{current_major_version}
+Requires:	postgresql-plpgsql >= %{version}-%{release}
+Obsoletes:	postgresql9.0-server postgresql8.5-server postgresql8.4-server postgresql8.3-server postgresql8.2-server
 
 %description	server
 The postgresql-server package includes the programs needed to create and run a
@@ -154,8 +136,7 @@ After installing this package, please read postgresql.mdv.releasenote.
 %package	docs
 Summary:	Extra documentation for PostgreSQL
 Group:		Databases
-Provides:	%{bname}-docs-virtual = %{current_major_version}
-Conflicts:	%{bname}-docs-virtual < %{current_major_version}
+Obsoletes:	postgresql9.0-docs postgresql8.5-docs postgresql8.4-docs postgresql8.3-docs postgresql8.2-docs
 
 %description	docs
 The postgresql-docs package includes the SGML source for the documentation as
@@ -166,9 +147,8 @@ project, or if you want to generate printed documentation.
 %package	contrib
 Summary:	Contributed binaries distributed with PostgreSQL
 Group:		Databases
-Requires:	postgresql%{current_major_version}-server >= %{version}-%{release}
-Provides:	%{bname}-contrib-virtual = %{current_major_version}
-Conflicts:	%{bname}-contrib-virtual < %{current_major_version}
+Requires:	postgresql-server >= %{version}-%{release}
+Obsoletes:	postgresql9.0-contrib postgresql8.5-contrib postgresql8.4-contrib postgresql8.3-contrib postgresql8.2-contrib
 
 %description	contrib
 The postgresql-contrib package includes the contrib tree distributed with the
@@ -177,28 +157,11 @@ PostgreSQL tarball.  Selected contrib modules are prebuilt.
 %package	devel
 Summary:	PostgreSQL development header files and libraries
 Group:		Development/Databases
-Requires:	postgresql%{current_major_version} >= %{version}-%{release}
-Provides:	%{bname}-devel-virtual = %{current_major_version}
-Conflicts:	%{bname}-devel-virtual < %{current_major_version}
-Requires:	%{libname} >= %{version}-%{release}
 Provides:	postgresql-libs-devel = %{version}-%{release}
-Provides:	pq-devel = %{version}-%{release}
-# Avoid conflicts with lib having bad major
-Conflicts:	libpq3-devel = 8.0.2
-%if %_lib != lib
-Provides:	libpq-devel = %{version}-%{release}
-%endif
-Provides:	%{_lib}pq-devel = %{version}
+Requires:	postgresql >= %{version}-%{release}
+Requires:	%{libname} >= %{version}-%{release}
 Requires:	%{libecpg} >= %{version}-%{release}
-Provides:	libecpg-devel = %{version}-%{release} 
-Provides:	%{_lib}ecpg-devel = %{version}-%{release}
-Conflicts:	%mklibname -d ecpg 5
-Conflicts:	%mklibname -d pq 5
-Conflicts:	%mklibname -d pq8.3
-Conflicts:	%mklibname -d ecpg8.3
-Conflicts:	%mklibname -d pq8.4
-Conflicts:	%mklibname -d ecpg8.4
-Provides:	%{bname}-devel = %{version}-%{release}
+Obsoletes:	postgresql9.0-devel postgresql8.5-devel postgresql8.4-devel postgresql8.3-devel postgresql8.2-devel
 
 %description	devel
 The postgresql-devel package contains the header files and libraries needed to
@@ -211,14 +174,11 @@ need to install this package.
 %package	pl
 Summary:	Procedurals languages for PostgreSQL
 Group:		Databases
-Conflicts:	libpgsql2
 Requires:	%{name}-plpython >= %{version}-%{release} 
 Requires:	%{name}-plperl >= %{version}-%{release} 
 Requires:	%{name}-pltcl >= %{version}-%{release} 
 Requires:	%{name}-plpgsql >= %{version}-%{release} 
-Provides:	%{bname}-pl-virtual = %{current_major_version}
-Conflicts:	%{bname}-pl-virtual < %{current_major_version}
-Provides:	%{bname}-pl = %{version}-%{release}
+Obsoletes:	postgresql9.0-pl postgresql8.5-pl postgresql8.4-pl postgresql8.3-pl postgresql8.2-pl
 
 %description	pl
 PostgreSQL is an advanced Object-Relational database management system. The
@@ -228,11 +188,9 @@ languages for the backend. PL/Pgsql is part of the core server package.
 %package	plpython
 Summary:	The PL/Python procedural language for PostgreSQL
 Group:		Databases
-Requires:	postgresql%{current_major_version}-server >= %{version}
-Requires:	%{?arch_tagged:%arch_tagged %{bname}-server-ABI}%{?!arch_tagged:%{bname}-server-ABI} >= %{current_major_version}
-Provides:	%{bname}-plpython-virtual = %{current_major_version}
-Conflicts:	%{bname}-plpython-virtual < %{current_major_version}
-Provides:	%{bname}-plpython = %{version}-%{release}
+Requires:	postgresql-server >= %{version}
+Requires:	%{?arch_tagged:%arch_tagged %{name}-server-ABI}%{?!arch_tagged:%{name}-server-ABI} >= %{current_major_version}
+Obsoletes:	postgresql9.0-plpython postgresql8.5-plpython postgresql8.4-plpython postgresql8.3-plpython postgresql8.2-plpython
 
 %description	plpython
 PostgreSQL is an advanced Object-Relational database management system. The
@@ -242,12 +200,10 @@ the backend. PL/Python is part of the core server package.
 %package	plperl
 Summary:	The PL/Perl procedural language for PostgreSQL
 Group:		Databases
-Requires:	postgresql%{current_major_version}-server >= %{version}
+Requires:	postgresql-server >= %{version}
 Requires:	perl-base >= %{perl_epoch}:%{perl_version}
-Requires:	%{?arch_tagged:%arch_tagged %{bname}-server-ABI}%{?!arch_tagged:%{bname}-server-ABI} >= %{current_major_version}
-Provides:	%{bname}-plperl-virtual = %{current_major_version}
-Conflicts:	%{bname}-plperl-virtual < %{current_major_version}
-Provides:	%{bname}-plperl = %{version}-%{release}
+Requires:	%{?arch_tagged:%arch_tagged %{name}-server-ABI}%{?!arch_tagged:%{name}-server-ABI} >= %{current_major_version}
+Obsoletes:	postgresql9.0-plperl postgresql8.5-plperl postgresql8.4-plperl postgresql8.3-plperl postgresql8.2-plperl
 
 %description	plperl
 PostgreSQL is an advanced Object-Relational database management system. The
@@ -257,11 +213,9 @@ backend. PL/Perl is part of the core server package.
 %package	pltcl
 Summary:	The PL/Tcl procedural language for PostgreSQL
 Group:		Databases
-Requires:	postgresql%{current_major_version}-server >= %{version}
-Requires:	%{?arch_tagged:%arch_tagged %{bname}-server-ABI}%{?!arch_tagged:%{bname}-server-ABI} >= %{current_major_version}
-Provides:	%{bname}-pltcl-virtual = %{current_major_version}
-Conflicts:	%{bname}-pltcl-virtual < %{current_major_version}
-Provides:	%{bname}-pltcl = %{version}-%{release}
+Requires:	postgresql-server >= %{version}
+Requires:	%{?arch_tagged:%arch_tagged %{name}-server-ABI}%{?!arch_tagged:%{name}-server-ABI} >= %{current_major_version}
+Obsoletes:	postgresql9.0-pltcl postgresql8.5-pltcl postgresql8.4-pltcl postgresql8.3-pltcl postgresql8.2-pltcl
 
 %description	pltcl
 PostgreSQL is an advanced Object-Relational database management system. The
@@ -271,11 +225,9 @@ backend. PL/Tcl is part of the core server package.
 %package	plpgsql
 Summary:	The PL/PgSQL procedural language for PostgreSQL
 Group:		Databases
-Requires:	postgresql%{current_major_version}-server >= %{version}
-Requires:	%{?arch_tagged:%arch_tagged %{bname}-server-ABI}%{?!arch_tagged:%{bname}-server-ABI} >= %{current_major_version}
-Provides:	%{bname}-plpgsql-virtual = %{current_major_version}
-Conflicts:	%{bname}-plpgsql-virtual < %{current_major_version}
-Provides:	%{bname}-plpgsql = %{version}-%{release}
+Requires:	postgresql-server >= %{version}
+Requires:	%{?arch_tagged:%arch_tagged %{name}-server-ABI}%{?!arch_tagged:%{name}-server-ABI} >= %{current_major_version}
+Obsoletes:	postgresql9.0-plpgsql postgresql8.5-plpgsql postgresql8.4-plpgsql postgresql8.3-plpgsql postgresql8.2-plpgsql
 
 %description	plpgsql
 PostgreSQL is an advanced Object-Relational database management system. The
@@ -284,7 +236,7 @@ the backend. PL/PgSQL is part of the core server package.
 
 %prep
 
-%setup -q -n %{bname}-%{version}%{?beta}
+%setup -q -n %{name}-%{version}
 %patch0 -p1 -b .ossp-uuid_dir~
 
 %build
@@ -292,21 +244,21 @@ the backend. PL/PgSQL is part of the core server package.
 %serverbuild
 
 %configure2_5x \
-        --disable-rpath \
-	--with-perl \
-	--with-python \
-        --with-tcl --with-tclconfig=%{_libdir} \
-        --with-openssl \
-        --with-pam \
-        --with-libxml \
-        --with-libxslt \
-        --libdir=%{_libdir} \
-        --mandir=%{_mandir} \
-        --prefix=%_prefix \
-        --sysconfdir=%{_sysconfdir}/pgsql \
-        --enable-nls \
+    --disable-rpath \
+    --with-perl \
+    --with-python \
+    --with-tcl --with-tclconfig=%{_libdir} \
+    --with-openssl \
+    --with-pam \
+    --with-libxml \
+    --with-libxslt \
+    --libdir=%{_libdir} \
+    --mandir=%{_mandir} \
+    --prefix=%{_prefix} \
+    --sysconfdir=%{_sysconfdir}/pgsql \
+    --enable-nls \
 %if %withuuid
-        --with-ossp-uuid
+    --with-ossp-uuid
 %endif
 
 # $(rpathdir) come from Makefile
@@ -361,10 +313,10 @@ strip *.so
 popd
 %endif
 
-mkdir -p %buildroot/var/log/postgres
+mkdir -p %{buildroot}/var/log/postgres
 
-mkdir -p %buildroot%logrotatedir
-cat > %buildroot%logrotatedir/%{bname} <<EOF
+mkdir -p %{buildroot}%logrotatedir
+cat > %{buildroot}%logrotatedir/%{name} <<EOF
 /var/log/postgres/postgresql {
     notifempty
     missingok
@@ -374,11 +326,11 @@ EOF
 
 install -D -m755 %{SOURCE11} %{buildroot}%{_initrddir}/postgresql
 
-mv %{buildroot}%{_docdir}/%{bname}/html %{buildroot}%{_docdir}/%{name}-docs-%{version}
+mv %{buildroot}%{_docdir}/%{name}/html %{buildroot}%{_docdir}/%{name}-docs-%{version}
 
 echo -n '' > main.lst
 for i in \
-    pg_ctl initdb pg_config psql pg_dump pgscripts libpq libecpg \
+    pg_ctl initdb pg_config psql pg_dump pgscripts libpq libecpg pg_basebackup \
     ecpg libpq%{major} ecpglib%{major_ecpg}; do
     %find_lang $i-%{current_major_version}
     cat $i-%{current_major_version}.lang >> main.lst
@@ -393,30 +345,21 @@ for i in postgres pg_resetxlog pg_controldata plpgsql plpython plperl pltcl; do
     cat $i-%{current_major_version}.lang >> server.lst
 done
 
-# pg_ctl.lang initdb.lang pg_config.lang psql.lang pg_dump.lang pgscripts.lang \
-# postgres.lang pg_resetxlog.lang pg_controldata.lang \
-# libpq.lang libecpg.lang \
-
 # taken directly in build dir.
 rm -fr %{buildroot}%{_datadir}/doc/postgresql/contrib/
 
-#(
-#cd postgresql-mdk
-#make install DESTDIR=%buildroot
-#)
-
-mkdir -p %buildroot/%_sys_macros_dir
-cat > %buildroot/%_sys_macros_dir/%{name}.macros <<EOF
+mkdir -p %{buildroot}/%_sys_macros_dir
+cat > %{buildroot}/%_sys_macros_dir/%{name}.macros <<EOF
 %%postgresql_version %{version}
 %%postgresql_major   %{current_major_version}
 %%postgresql_minor   %{current_minor_version}
-%%pgmodules_req Requires: %{?arch_tagged:%arch_tagged %{bname}-server-ABI}%{?!arch_tagged:%{bname}-server-ABI} >= %{current_major_version}
+%%pgmodules_req Requires: %{?arch_tagged:%arch_tagged %{name}-server-ABI}%{?!arch_tagged:%{name}-server-ABI} >= %{current_major_version}
 EOF
 
 cat %{SOURCE13} > postgresql.mdv.releasenote
 cat > README.urpmi <<EOF
-You just installed or updated %{bname} server.
-You can find important information about mandriva %{bname} rpms and database
+You just installed or updated %{name} server.
+You can find important information about mandriva %{name} rpms and database
 management in:
 
 %{_defaultdocdir}/%{name}-server/postgresql.mdv.releasenote
@@ -431,7 +374,7 @@ cd %{buildroot}/var/lib/pgsql/
 ln -s .profile .bashrc
 )
 
-cat > %buildroot%_sysconfdir/sysconfig/postgresql <<EOF
+cat > %{buildroot}%_sysconfdir/sysconfig/postgresql <<EOF
 # Olivier Thauvin <nanardon@mandriva.org>
 
 # The database location:
@@ -447,6 +390,9 @@ LC_ALL=C
 # These are additional to pass to pg_ctl when starting/restarting postgresql.
 # PGOPTIONS=
 EOF
+
+# cleanup
+rm -f %{buildroot}%{_libdir}/lib*.*a
 
 %pre server
 %_pre_useradd postgres /var/lib/pgsql /bin/bash
@@ -467,10 +413,10 @@ exit 1
 
 %posttrans server
 
-%_post_service %{bname}
+%_post_service %{name}
 
 %preun server
-%_preun_service %{bname}
+%_preun_service %{name}
 
 %postun server
 %_postun_userdel postgres
@@ -478,9 +424,9 @@ exit 1
 %clean
 rm -rf %{buildroot}
 
-%files -f main.lst 
+%files -f main.lst
 %defattr(-,root,root)
-%doc doc/KNOWN_BUGS doc/MISSING_FEATURES doc/README* 
+%doc doc/KNOWN_BUGS doc/MISSING_FEATURES
 %doc COPYRIGHT README HISTORY doc/bug.template
 %{_bindir}/clusterdb
 %{_bindir}/createdb
@@ -489,9 +435,11 @@ rm -rf %{buildroot}
 %{_bindir}/dropdb
 %{_bindir}/droplang
 %{_bindir}/dropuser
+%{_bindir}/pg_basebackup
 %{_bindir}/pg_dump
 %{_bindir}/pg_dumpall
 %{_bindir}/pg_restore
+%{_bindir}/pg_test_fsync
 %{_bindir}/psql
 %{_bindir}/reindexdb
 %{_bindir}/vacuumdb
@@ -502,16 +450,17 @@ rm -rf %{buildroot}
 %{_mandir}/man1/dropdb.*
 %{_mandir}/man1/droplang.*
 %{_mandir}/man1/dropuser.*
+%{_mandir}/man1/pg_basebackup.*
 %{_mandir}/man1/pg_dump.*
 %{_mandir}/man1/pg_dumpall.*
 %{_mandir}/man1/pg_restore.*
 %{_mandir}/man1/psql.*
-%{_mandir}/man1/vacuumdb.*
 %{_mandir}/man1/reindexdb.*
+%{_mandir}/man1/vacuumdb.*
 %{_mandir}/man7/*
 %_sys_macros_dir/%{name}.macros
 
-%files -n %{libname} 
+%files -n %{libname}
 %defattr(-,root,root)
 %{_libdir}/libpq.so.%{major}*
 
@@ -527,7 +476,6 @@ rm -rf %{buildroot}
 
 %files contrib
 %defattr(-,root,root)
-# %doc contrib/*/README.* contrib/spi/*.example
 %{_libdir}/postgresql/_int.so
 %{_libdir}/postgresql/btree_gist.so
 %{_libdir}/postgresql/chkpass.so
@@ -556,7 +504,7 @@ rm -rf %{buildroot}
 %{_libdir}/postgresql/sslinfo.so
 %{_libdir}/postgresql/pageinspect.so
 
-%{_datadir}/postgresql/contrib/
+#%{_datadir}/postgresql/contrib/
 %{_bindir}/oid2name
 %{_bindir}/pgbench
 %{_bindir}/vacuumlo
@@ -589,24 +537,27 @@ rm -rf %{buildroot}
 %attr(-,postgres,postgres) %{pgdata}/data
 %attr(700,postgres,postgres) %dir %{pgdata}/backups
 %{_libdir}/postgresql/*_and_*.so
-%{_libdir}/postgresql/pgxml.so
-%{_libdir}/postgresql/dict_int.so
-%{_libdir}/postgresql/dict_xsyn.so
-%{_libdir}/postgresql/test_parser.so
-%{_libdir}/postgresql/tsearch2.so
-%{_libdir}/postgresql/dict_snowball.so
+%{_libdir}/postgresql/auth_delay.so
 %{_libdir}/postgresql/auto_explain.so
 %{_libdir}/postgresql/btree_gin.so
 %{_libdir}/postgresql/citext.so
+%{_libdir}/postgresql/dict_int.so
+%{_libdir}/postgresql/dict_snowball.so
+%{_libdir}/postgresql/dict_xsyn.so
+%{_libdir}/postgresql/dummy_seclabel.so
+%{_libdir}/postgresql/euc2004_sjis2004.so
+%{_libdir}/postgresql/file_fdw.so
+%{_libdir}/postgresql/libpqwalreceiver.so
+%{_libdir}/postgresql/passwordcheck.so
 %{_libdir}/postgresql/pg_stat_statements.so
+%{_libdir}/postgresql/pg_upgrade_support.so
+%{_libdir}/postgresql/pgxml.so
+%{_libdir}/postgresql/test_parser.so
+%{_libdir}/postgresql/tsearch2.so
+%{_libdir}/postgresql/unaccent.so
 %if %withuuid
 %{_libdir}/postgresql/uuid-ossp.so
 %endif
-%{_libdir}/postgresql/euc2004_sjis2004.so
-%{_libdir}/postgresql/libpqwalreceiver.so
-%{_libdir}/postgresql/passwordcheck.so
-%{_libdir}/postgresql/pg_upgrade_support.so
-%{_libdir}/postgresql/unaccent.so
 %{_datadir}/postgresql/postgres.bki
 %{_datadir}/postgresql/postgres.description
 %{_datadir}/postgresql/*.sample
@@ -632,46 +583,45 @@ rm -rf %{buildroot}
 %{_datadir}/postgresql/timezonesets/Indian.txt
 %{_datadir}/postgresql/timezonesets/Pacific.txt
 %{_datadir}/postgresql/tsearch_data
+%dir %{_datadir}/postgresql/extension
+%{_datadir}/postgresql/extension/*
 
 %attr(700,postgres,postgres) %dir /var/log/postgres
-%logrotatedir/%{bname}
+%logrotatedir/%{name}
 
 %files devel
 %defattr(-,root,root)
 # %doc doc/TODO doc/TODO.detail
 %{_includedir}/*
 %{_bindir}/ecpg
-%{_libdir}/lib*.a
-%{_libdir}/lib*.so
+%{_libdir}/libecpg_compat.so
+%{_libdir}/libecpg.so
+%{_libdir}/libpgtypes.so
+%{_libdir}/libpq.so
 %{_libdir}/postgresql/pgxs/
 %{_mandir}/man1/ecpg.1*
 %{_bindir}/pg_config
 %{_mandir}/man1/pg_config.1*
-#From %files -n %{libnamedevel}
-%{_libdir}/libpq.so
-#From %files -n %{libecpgdevel}
-%{_libdir}/libecpg.so
 %{_mandir}/man3/SPI_*.3*
 %{_mandir}/man3/dblink*.3*
 
-%files pl 
-%defattr(-,root,root) 
+%files pl
+%defattr(-,root,root)
 
 %files plpython
-%defattr(-,root,root) 
-%{_libdir}/postgresql/plpython.so
-%{_libdir}/postgresql/plpython2.so
+%defattr(-,root,root)
+%{_libdir}/postgresql/plpython*.so
 
 %files plperl
-%defattr(-,root,root) 
+%defattr(-,root,root)
 %{_libdir}/postgresql/plperl.so
 
 %files pltcl
-%defattr(-,root,root) 
+%defattr(-,root,root)
 %{_libdir}/postgresql/pltcl.so
-%{_bindir}/pltcl_delmod 
-%{_bindir}/pltcl_listmod 
-%{_bindir}/pltcl_loadmod 
+%{_bindir}/pltcl_delmod
+%{_bindir}/pltcl_listmod
+%{_bindir}/pltcl_loadmod
 %{_datadir}/postgresql/unknown.pltcl
 
 %files plpgsql
