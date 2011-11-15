@@ -328,22 +328,66 @@ install -D -m755 %{SOURCE11} %{buildroot}%{_initrddir}/postgresql
 
 mv %{buildroot}%{_docdir}/%{name}/html %{buildroot}%{_docdir}/%{name}-docs-%{version}
 
-echo -n '' > main.lst
-for i in \
-    pg_ctl initdb pg_config psql pg_dump pgscripts libpq libecpg pg_basebackup \
-    ecpg libpq%{major} ecpglib%{major_ecpg}; do
-    %find_lang $i-%{current_major_version}
-    cat $i-%{current_major_version}.lang >> main.lst
-    %find_lang $i
-    cat $i.lang >> main.lst
-done
-echo -n '' > server.lst
-for i in postgres pg_resetxlog pg_controldata plpgsql plpython plperl pltcl; do
-    %find_lang $i
-    cat $i.lang >> server.lst
-    %find_lang $i-%{current_major_version}
-    cat $i-%{current_major_version}.lang >> server.lst
-done
+echo -n "" > %{libname}.lst
+echo -n "" > %{libecpg}.lst
+echo -n "" > server.lst
+echo -n "" > main.lst
+echo -n "" > devel.lst
+echo -n "" > plperl.lst
+echo -n "" > plpython.lst
+echo -n "" > pltcl.lst
+echo -n "" > plpgsql.lst
+
+# libs
+%find_lang libpq%{major}-%{majorversion}
+cat libpq%{major}-%{majorversion}.lang >> %{libname}.lst
+%find_lang ecpglib%{major_ecpg}-%{majorversion}
+cat ecpglib%{major_ecpg}-%{majorversion}.lang >> %{libecpg}.lst
+
+# server
+%find_lang initdb-%{majorversion}
+cat initdb-%{majorversion}.lang >> server.lst
+%find_lang pg_basebackup-%{majorversion}
+cat pg_basebackup-%{majorversion}.lang >> server.lst
+%find_lang pg_controldata-%{majorversion}
+cat pg_controldata-%{majorversion}.lang >> server.lst
+%find_lang pg_ctl-%{majorversion}
+cat pg_ctl-%{majorversion}.lang >> server.lst
+%find_lang pg_resetxlog-%{majorversion}
+cat pg_resetxlog-%{majorversion}.lang >> server.lst
+%find_lang postgres-%{majorversion}
+cat postgres-%{majorversion}.lang >> server.lst
+
+# main
+%find_lang pg_config-%{majorversion}
+cat pg_config-%{majorversion}.lang >> main.lst
+%find_lang pg_dump-%{majorversion}
+cat pg_dump-%{majorversion}.lang >> main.lst
+%find_lang pgscripts-%{majorversion}
+cat pgscripts-%{majorversion}.lang >> main.lst
+%find_lang psql-%{majorversion}
+cat psql-%{majorversion}.lang >>main.lst
+
+# devel
+%find_lang ecpg-%{majorversion}
+cat ecpg-%{majorversion}.lang >> devel.lst
+
+# perl
+%find_lang plperl-%{majorversion}
+cat plperl-%{majorversion}.lang >> plperl.lst
+
+# python
+%find_lang plpython-%{majorversion}
+cat plpython-%{majorversion}.lang >> plpython.lst
+
+# tcl
+%find_lang pltcl-%{majorversion}
+cat pltcl-%{majorversion}.lang >> pltcl.lst
+
+# plpgsql
+%find_lang plpgsql-%{majorversion}
+cat plpgsql-%{majorversion}.lang >> plpgsql.lst
+
 
 # taken directly in build dir.
 rm -fr %{buildroot}%{_datadir}/doc/postgresql/contrib/
@@ -460,11 +504,11 @@ rm -rf %{buildroot}
 %{_mandir}/man7/*
 %_sys_macros_dir/%{name}.macros
 
-%files -n %{libname}
+%files -n %{libname} -f %{libname}.lst
 %defattr(-,root,root)
 %{_libdir}/libpq.so.%{major}*
 
-%files -n %{libecpg}
+%files -n %{libecpg} -f %{libecpg}.lst
 %defattr(-,root,root)
 %{_libdir}/libecpg.so.%{major_ecpg}*
 %{_libdir}/libecpg_compat.so.*
@@ -589,7 +633,7 @@ rm -rf %{buildroot}
 %attr(700,postgres,postgres) %dir /var/log/postgres
 %logrotatedir/%{name}
 
-%files devel
+%files devel -f devel.lst
 %defattr(-,root,root)
 # %doc doc/TODO doc/TODO.detail
 %{_includedir}/*
@@ -608,15 +652,15 @@ rm -rf %{buildroot}
 %files pl
 %defattr(-,root,root)
 
-%files plpython
+%files plpython -f plpython.lst
 %defattr(-,root,root)
 %{_libdir}/postgresql/plpython*.so
 
-%files plperl
+%files plperl -f plperl.lst
 %defattr(-,root,root)
 %{_libdir}/postgresql/plperl.so
 
-%files pltcl
+%files pltcl -f pltcl.lst
 %defattr(-,root,root)
 %{_libdir}/postgresql/pltcl.so
 %{_bindir}/pltcl_delmod
@@ -624,6 +668,6 @@ rm -rf %{buildroot}
 %{_bindir}/pltcl_loadmod
 %{_datadir}/postgresql/unknown.pltcl
 
-%files plpgsql
-%defattr(-,root,root) 
+%files plpgsql -f plpgsql.lst
+%defattr(-,root,root)
 %{_libdir}/postgresql/plpgsql.so
