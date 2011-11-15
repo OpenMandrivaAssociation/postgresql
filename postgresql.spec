@@ -54,7 +54,7 @@ BuildRequires:  ossp-uuid-devel >= 1.6.2-5
 BuildRequires:  docbook-dtd42-sgml docbook-dtd44-xml
 BuildRequires:	openjade docbook-utils xsltproc docbook-style-xsl
 Requires:	%{libname} >= %{version}-%{release}
-Obsoletes:	postgresql9.0 postgresql8.5 postgresql8.4 postgresql8.3 postgresql8.2
+Conflicts:	postgresql9.0 postgresql8.5 postgresql8.4 postgresql8.3 postgresql8.2
 Buildroot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %description
@@ -78,11 +78,11 @@ installing the postgresql-server package.
 Summary:	The shared libraries required for any PostgreSQL clients
 Group:		System/Libraries
 Provides:	postgresql-libs = %{version}-%{release}
-Obsoletes:	postgresql-libs < %{current_major_version}
-Obsoletes:	%{mklibname pq9.0 _5}
-Obsoletes:	%{mklibname pq8.5 _5}
-Obsoletes:	%{mklibname pq8.4 _5}
-Obsoletes:	%{mklibname pq8.3 _5}
+Conflicts:	postgresql-libs < %{current_major_version}
+Conflicts:	%{mklibname pq9.0 _5}
+Conflicts:	%{mklibname pq8.5 _5}
+Conflicts:	%{mklibname pq8.4 _5}
+Conflicts:	%{mklibname pq8.3 _5}
 
 %description -n	%{libname}
 C and C++ libraries to enable user programs to communicate with the PostgreSQL
@@ -93,11 +93,11 @@ TCP/IP.
 Summary:	Shared library libecpg for PostgreSQL
 Group:		System/Libraries
 Requires:	postgresql >= %{version}-%{release}
-Obsoletes:	%{mklibname ecpg9.0 _6}
-Obsoletes:	%{mklibname ecpg8.5 _6}
-Obsoletes:	%{mklibname ecpg8.4 _6}
-Obsoletes:	%{mklibname ecpg8.3 _6}
-Obsoletes:	%{mklibname ecpg 5}
+Conflicts:	%{mklibname ecpg9.0 _6}
+Conflicts:	%{mklibname ecpg8.5 _6}
+Conflicts:	%{mklibname ecpg8.4 _6}
+Conflicts:	%{mklibname ecpg8.3 _6}
+Conflicts:	%{mklibname ecpg 5}
 
 %description -n	%{libecpg}
 Libecpg is used by programs built with ecpg (Embedded PostgreSQL for C) Use
@@ -119,7 +119,7 @@ Requires(pre):	postgresql >= %{version}-%{release}
 Requires(post):	postgresql >= %{version}-%{release}
 Provides:	%{?arch_tagged:%arch_tagged %{name}-server-ABI}%{?!arch_tagged:%{name}-server-ABI} = %{current_major_version}
 Requires:	postgresql-plpgsql >= %{version}-%{release}
-Obsoletes:	postgresql9.0-server postgresql8.5-server postgresql8.4-server postgresql8.3-server postgresql8.2-server
+Conflicts:	postgresql9.0-server postgresql8.5-server postgresql8.4-server postgresql8.3-server postgresql8.2-server
 
 %description	server
 The postgresql-server package includes the programs needed to create and run a
@@ -136,7 +136,7 @@ After installing this package, please read postgresql.mdv.releasenote.
 %package	docs
 Summary:	Extra documentation for PostgreSQL
 Group:		Databases
-Obsoletes:	postgresql9.0-docs postgresql8.5-docs postgresql8.4-docs postgresql8.3-docs postgresql8.2-docs
+Conflicts:	postgresql9.0-docs postgresql8.5-docs postgresql8.4-docs postgresql8.3-docs postgresql8.2-docs
 
 %description	docs
 The postgresql-docs package includes the SGML source for the documentation as
@@ -148,7 +148,7 @@ project, or if you want to generate printed documentation.
 Summary:	Contributed binaries distributed with PostgreSQL
 Group:		Databases
 Requires:	postgresql-server >= %{version}-%{release}
-Obsoletes:	postgresql9.0-contrib postgresql8.5-contrib postgresql8.4-contrib postgresql8.3-contrib postgresql8.2-contrib
+Conflicts:	postgresql9.0-contrib postgresql8.5-contrib postgresql8.4-contrib postgresql8.3-contrib postgresql8.2-contrib
 
 %description	contrib
 The postgresql-contrib package includes the contrib tree distributed with the
@@ -161,7 +161,7 @@ Provides:	postgresql-libs-devel = %{version}-%{release}
 Requires:	postgresql >= %{version}-%{release}
 Requires:	%{libname} >= %{version}-%{release}
 Requires:	%{libecpg} >= %{version}-%{release}
-Obsoletes:	postgresql9.0-devel postgresql8.5-devel postgresql8.4-devel postgresql8.3-devel postgresql8.2-devel
+Conflicts:	postgresql9.0-devel postgresql8.5-devel postgresql8.4-devel postgresql8.3-devel postgresql8.2-devel
 
 %description	devel
 The postgresql-devel package contains the header files and libraries needed to
@@ -178,7 +178,7 @@ Requires:	%{name}-plpython >= %{version}-%{release}
 Requires:	%{name}-plperl >= %{version}-%{release} 
 Requires:	%{name}-pltcl >= %{version}-%{release} 
 Requires:	%{name}-plpgsql >= %{version}-%{release} 
-Obsoletes:	postgresql9.0-pl postgresql8.5-pl postgresql8.4-pl postgresql8.3-pl postgresql8.2-pl
+Conflicts:	postgresql9.0-pl postgresql8.5-pl postgresql8.4-pl postgresql8.3-pl postgresql8.2-pl
 
 %description	pl
 PostgreSQL is an advanced Object-Relational database management system. The
@@ -190,7 +190,7 @@ Summary:	The PL/Python procedural language for PostgreSQL
 Group:		Databases
 Requires:	postgresql-server >= %{version}
 Requires:	%{?arch_tagged:%arch_tagged %{name}-server-ABI}%{?!arch_tagged:%{name}-server-ABI} >= %{current_major_version}
-Obsoletes:	postgresql9.0-plpython postgresql8.5-plpython postgresql8.4-plpython postgresql8.3-plpython postgresql8.2-plpython
+Conflicts:	postgresql9.0-plpython postgresql8.5-plpython postgresql8.4-plpython postgresql8.3-plpython postgresql8.2-plpython
 
 %description	plpython
 PostgreSQL is an advanced Object-Relational database management system. The
@@ -203,7 +203,7 @@ Group:		Databases
 Requires:	postgresql-server >= %{version}
 Requires:	perl-base >= %{perl_epoch}:%{perl_version}
 Requires:	%{?arch_tagged:%arch_tagged %{name}-server-ABI}%{?!arch_tagged:%{name}-server-ABI} >= %{current_major_version}
-Obsoletes:	postgresql9.0-plperl postgresql8.5-plperl postgresql8.4-plperl postgresql8.3-plperl postgresql8.2-plperl
+Conflicts:	postgresql9.0-plperl postgresql8.5-plperl postgresql8.4-plperl postgresql8.3-plperl postgresql8.2-plperl
 
 %description	plperl
 PostgreSQL is an advanced Object-Relational database management system. The
@@ -215,7 +215,7 @@ Summary:	The PL/Tcl procedural language for PostgreSQL
 Group:		Databases
 Requires:	postgresql-server >= %{version}
 Requires:	%{?arch_tagged:%arch_tagged %{name}-server-ABI}%{?!arch_tagged:%{name}-server-ABI} >= %{current_major_version}
-Obsoletes:	postgresql9.0-pltcl postgresql8.5-pltcl postgresql8.4-pltcl postgresql8.3-pltcl postgresql8.2-pltcl
+Conflicts:	postgresql9.0-pltcl postgresql8.5-pltcl postgresql8.4-pltcl postgresql8.3-pltcl postgresql8.2-pltcl
 
 %description	pltcl
 PostgreSQL is an advanced Object-Relational database management system. The
@@ -227,7 +227,7 @@ Summary:	The PL/PgSQL procedural language for PostgreSQL
 Group:		Databases
 Requires:	postgresql-server >= %{version}
 Requires:	%{?arch_tagged:%arch_tagged %{name}-server-ABI}%{?!arch_tagged:%{name}-server-ABI} >= %{current_major_version}
-Obsoletes:	postgresql9.0-plpgsql postgresql8.5-plpgsql postgresql8.4-plpgsql postgresql8.3-plpgsql postgresql8.2-plpgsql
+Conflicts:	postgresql9.0-plpgsql postgresql8.5-plpgsql postgresql8.4-plpgsql postgresql8.3-plpgsql postgresql8.2-plpgsql
 
 %description	plpgsql
 PostgreSQL is an advanced Object-Relational database management system. The
