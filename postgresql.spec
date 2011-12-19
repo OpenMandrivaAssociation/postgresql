@@ -1,21 +1,26 @@
 %define _requires_exceptions devel(libtcl
-
-# %%define Werror_cflags %nil
-# %%define _disable_ld_no_undefined 1
-
 %define perl_version %(rpm -q --qf "%{VERSION}" perl)
 %define perl_epoch %(rpm -q --qf "%{EPOCH}" perl)
-
-%define pgdata /var/lib/pgsql
-%define logrotatedir %{_sysconfdir}/logrotate.d
 
 %define major 5
 %define major_ecpg 6
 %define libname %mklibname pq %{major}
 %define libecpg %mklibname ecpg %{major_ecpg}
 
-%define current_major_version 9.1
-%define current_minor_version 1
+%define majorversion 9.1
+%define minorversion 1
+%define bname		%{name}%{majorversion}
+%define server		%{name}-server
+%define contrib		%{name}-contrib
+%define metapl		%{name}-pl
+%define plpython	%{name}-plpython
+%define plperl		%{name}-plperl
+%define pltcl		%{name}-pltcl
+%define plpgsql		%{name}-plpgsql
+
+%define pgdata /var/lib/pgsql
+%define pguser postgres
+%define logrotatedir %{_sysconfdir}/logrotate.d
 
 %define withuuid 0
 %if %mdvver >= 201100
@@ -24,20 +29,19 @@
 
 Summary: 	PostgreSQL client programs and libraries
 Name:		postgresql
-Version: 	9.1.1
-Release: 	%mkrel 0
+Version: 	9.1.2
+Release: 	1
 License:	BSD
 Group:		Databases
 URL:		http://www.postgresql.org/ 
 Source0:	ftp://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.bz2
-Source5:	ftp://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.bz2.md5
+Source1:	%{SOURCE0}.md5
 Source10:	postgres.profile
 Source11:	postgresql.init
 Source13:	postgresql.mdv.releasenote
 Patch0:		postgresql-9.0.4_ossp-uuid-dir.patch
-Requires:	perl
-Provides:	postgresql-clients = %{version}-%{release}
-BuildRequires:	bison flex
+BuildRequires:	bison
+BuildRequires:	flex
 BuildRequires:	openssl-devel
 BuildRequires:	pam-devel
 BuildRequires:	perl-devel
@@ -51,11 +55,18 @@ BuildRequires:	zlib-devel
 BuildRequires:  ossp-uuid-devel >= 1.6.2-5
 %endif
 # Need to build doc
-BuildRequires:  docbook-dtd42-sgml docbook-dtd44-xml
-BuildRequires:	openjade docbook-utils xsltproc docbook-style-xsl
-Requires:	%{libname} >= %{version}-%{release}
-Conflicts:	postgresql9.0 postgresql8.5 postgresql8.4 postgresql8.3 postgresql8.2
-Buildroot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
+BuildRequires:  docbook-dtd31-sgml
+BuildRequires:  docbook-dtd41-sgml
+BuildRequires:  docbook-dtd42-sgml
+BuildRequires:	docbook-dtd44-xml
+BuildRequires:	openjade
+BuildRequires:	docbook-utils
+BuildRequires:	xsltproc
+BuildRequires:	docbook-style-xsl
+
+Provides:	postgresql-clients = %{version}-%{release}
+#Requires:	perl
+Obsoletes:	postgresql9.0 postgresql8.5 postgresql8.4 postgresql8.3 postgresql8.2
 
 %description
 PostgreSQL is an advanced Object-Relational database management system (DBMS)
@@ -78,11 +89,10 @@ installing the postgresql-server package.
 Summary:	The shared libraries required for any PostgreSQL clients
 Group:		System/Libraries
 Provides:	postgresql-libs = %{version}-%{release}
-Conflicts:	postgresql-libs < %{current_major_version}
-Conflicts:	%{mklibname pq9.0 _5}
-Conflicts:	%{mklibname pq8.5 _5}
-Conflicts:	%{mklibname pq8.4 _5}
-Conflicts:	%{mklibname pq8.3 _5}
+%rename	%{_lib}pq9.0_5
+%rename	%{_lib}pq8.5_5
+%rename	%{_lib}pq8.4_5
+%rename	%{_lib}pq8.3_5
 
 %description -n	%{libname}
 C and C++ libraries to enable user programs to communicate with the PostgreSQL
@@ -92,36 +102,33 @@ TCP/IP.
 %package -n	%{libecpg}
 Summary:	Shared library libecpg for PostgreSQL
 Group:		System/Libraries
-Requires:	postgresql >= %{version}-%{release}
-Conflicts:	%{mklibname ecpg9.0 _6}
-Conflicts:	%{mklibname ecpg8.5 _6}
-Conflicts:	%{mklibname ecpg8.4 _6}
-Conflicts:	%{mklibname ecpg8.3 _6}
+%rename	%{_lib}ecpg9.0_6
+%rename	%{_lib}ecpg8.5_6
+%rename	%{_lib}ecpg8.4_6
+%rename	%{_lib}ecpg8.3_6
 Conflicts:	%{mklibname ecpg 5}
 
 %description -n	%{libecpg}
 Libecpg is used by programs built with ecpg (Embedded PostgreSQL for C) Use
 postgresql-dev to develop such programs.
 
-%package	server
+%package -n %{server}
 Summary:	The programs needed to create and run a PostgreSQL server
 Group:		Databases
 Provides:	sqlserver
-Requires(post): %{libname} >= %{version}-%{release}
-Requires(preun): %{libname} >= %{version}-%{release}
+Provides:	postgresql-server = %{version}-%{release}
 # add/remove services
 Requires(post): rpm-helper
 Requires(preun): rpm-helper
 # add/del user
-Requires(pre): rpm-helper
-Requires(postun): rpm-helper
-Requires(pre):	postgresql >= %{version}-%{release}
-Requires(post):	postgresql >= %{version}-%{release}
-Provides:	%{?arch_tagged:%arch_tagged %{name}-server-ABI}%{?!arch_tagged:%{name}-server-ABI} = %{current_major_version}
-Requires:	postgresql-plpgsql >= %{version}-%{release}
-Conflicts:	postgresql9.0-server postgresql8.5-server postgresql8.4-server postgresql8.3-server postgresql8.2-server
+Requires(pre,postun): rpm-helper
+Requires(post,preun): update-alternatives
+# the client bins are needed for upgrading
+Requires:	postgresql >= %{version}-%{release}
+#Requires:	postgresql-plpgsql >= %{version}-%{release}
+Obsoletes:	postgresql9.0-server postgresql8.5-server postgresql8.4-server postgresql8.3-server postgresql8.2-server
 
-%description	server
+%description -n %{server}
 The postgresql-server package includes the programs needed to create and run a
 PostgreSQL server, which will in turn allow you to create and maintain
 PostgreSQL databases.  PostgreSQL is an advanced Object-Relational database
@@ -136,7 +143,7 @@ After installing this package, please read postgresql.mdv.releasenote.
 %package	docs
 Summary:	Extra documentation for PostgreSQL
 Group:		Databases
-Conflicts:	postgresql9.0-docs postgresql8.5-docs postgresql8.4-docs postgresql8.3-docs postgresql8.2-docs
+Obsoletes:	postgresql9.0-docs postgresql8.5-docs postgresql8.4-docs postgresql8.3-docs postgresql8.2-docs
 
 %description	docs
 The postgresql-docs package includes the SGML source for the documentation as
@@ -144,24 +151,23 @@ well as the documentation in other formats, and some extra documentation.
 Install this package if you want to help with the PostgreSQL documentation
 project, or if you want to generate printed documentation.
 
-%package	contrib
+%package -n %{contrib}
 Summary:	Contributed binaries distributed with PostgreSQL
 Group:		Databases
-Requires:	postgresql-server >= %{version}-%{release}
-Conflicts:	postgresql9.0-contrib postgresql8.5-contrib postgresql8.4-contrib postgresql8.3-contrib postgresql8.2-contrib
+#Requires:	postgresql-server >= %{version}-%{release}
+Obsoletes:	postgresql9.0-contrib postgresql8.5-contrib postgresql8.4-contrib postgresql8.3-contrib postgresql8.2-contrib
 
-%description	contrib
+%description -n %{contrib}
 The postgresql-contrib package includes the contrib tree distributed with the
 PostgreSQL tarball.  Selected contrib modules are prebuilt.
 
 %package	devel
 Summary:	PostgreSQL development header files and libraries
 Group:		Development/Databases
-Provides:	postgresql-libs-devel = %{version}-%{release}
-Requires:	postgresql >= %{version}-%{release}
+Provides:	%{name}-devel = %{version}-%{release}
 Requires:	%{libname} >= %{version}-%{release}
 Requires:	%{libecpg} >= %{version}-%{release}
-Conflicts:	postgresql9.0-devel postgresql8.5-devel postgresql8.4-devel postgresql8.3-devel postgresql8.2-devel
+Obsoletes:	postgresql9.0-devel postgresql8.5-devel postgresql8.4-devel postgresql8.3-devel postgresql8.2-devel
 
 %description	devel
 The postgresql-devel package contains the header files and libraries needed to
@@ -171,83 +177,88 @@ need to install this package if you want to develop applications which will
 interact with a PostgreSQL server. If you're installing postgresql-server, you
 need to install this package.
 
-%package	pl
+%package -n %{metapl}
 Summary:	Procedurals languages for PostgreSQL
 Group:		Databases
+Provides:	%{name}-pl = %{version}-%{release}
 Requires:	%{name}-plpython >= %{version}-%{release} 
 Requires:	%{name}-plperl >= %{version}-%{release} 
 Requires:	%{name}-pltcl >= %{version}-%{release} 
 Requires:	%{name}-plpgsql >= %{version}-%{release} 
-Conflicts:	postgresql9.0-pl postgresql8.5-pl postgresql8.4-pl postgresql8.3-pl postgresql8.2-pl
+Obsoletes:	postgresql9.0-pl postgresql8.5-pl postgresql8.4-pl postgresql8.3-pl postgresql8.2-pl
 
-%description	pl
+%description -n %{metapl}
 PostgreSQL is an advanced Object-Relational database management system. The
 postgresql-pl will install the the PL/Perl, PL/Tcl, and PL/Python procedural
 languages for the backend. PL/Pgsql is part of the core server package.
 
-%package	plpython
+%package -n %{plpython}
 Summary:	The PL/Python procedural language for PostgreSQL
 Group:		Databases
-Requires:	postgresql-server >= %{version}
-Requires:	%{?arch_tagged:%arch_tagged %{name}-server-ABI}%{?!arch_tagged:%{name}-server-ABI} >= %{current_major_version}
-Conflicts:	postgresql9.0-plpython postgresql8.5-plpython postgresql8.4-plpython postgresql8.3-plpython postgresql8.2-plpython
+Provides:	%{name}-plpython = %{version}-%{release}
+#Requires:	postgresql-server >= %{version}
+Obsoletes:	postgresql9.0-plpython postgresql8.5-plpython postgresql8.4-plpython postgresql8.3-plpython postgresql8.2-plpython
 
-%description	plpython
+%description -n %{plpython}
 PostgreSQL is an advanced Object-Relational database management system. The
 postgresql-plpython package contains the the PL/Python procedural languages for
 the backend. PL/Python is part of the core server package.
 
-%package	plperl
+%package -n %{plperl}
 Summary:	The PL/Perl procedural language for PostgreSQL
-Group:		Databases
-Requires:	postgresql-server >= %{version}
-Requires:	perl-base >= %{perl_epoch}:%{perl_version}
-Requires:	%{?arch_tagged:%arch_tagged %{name}-server-ABI}%{?!arch_tagged:%{name}-server-ABI} >= %{current_major_version}
-Conflicts:	postgresql9.0-plperl postgresql8.5-plperl postgresql8.4-plperl postgresql8.3-plperl postgresql8.2-plperl
+Group:		Databases	
+Provides:	%{name}-plperl = %{version}-%{release}
+#Requires:	postgresql-server >= %{version}
+Obsoletes:	postgresql9.0-plperl postgresql8.5-plperl postgresql8.4-plperl postgresql8.3-plperl postgresql8.2-plperl
 
-%description	plperl
+%description -n %{plperl}
 PostgreSQL is an advanced Object-Relational database management system. The
 postgresql-plperl package contains the the PL/Perl procedural languages for the
 backend. PL/Perl is part of the core server package.
 
-%package	pltcl
+%package -n %{pltcl}
 Summary:	The PL/Tcl procedural language for PostgreSQL
 Group:		Databases
-Requires:	postgresql-server >= %{version}
-Requires:	%{?arch_tagged:%arch_tagged %{name}-server-ABI}%{?!arch_tagged:%{name}-server-ABI} >= %{current_major_version}
-Conflicts:	postgresql9.0-pltcl postgresql8.5-pltcl postgresql8.4-pltcl postgresql8.3-pltcl postgresql8.2-pltcl
+Provides:	%{name}-pltcl = %{version}-%{release}
+#Requires:	postgresql-server >= %{version}
+Obsoletes:	postgresql9.0-pltcl postgresql8.5-pltcl postgresql8.4-pltcl postgresql8.3-pltcl postgresql8.2-pltcl
 
-%description	pltcl
+%description -n %{pltcl}
 PostgreSQL is an advanced Object-Relational database management system. The
 postgresql-pltcl package contains the the PL/Tcl procedural languages for the
 backend. PL/Tcl is part of the core server package.
 
-%package	plpgsql
+%package -n %{plpgsql}
 Summary:	The PL/PgSQL procedural language for PostgreSQL
 Group:		Databases
-Requires:	postgresql-server >= %{version}
-Requires:	%{?arch_tagged:%arch_tagged %{name}-server-ABI}%{?!arch_tagged:%{name}-server-ABI} >= %{current_major_version}
-Conflicts:	postgresql9.0-plpgsql postgresql8.5-plpgsql postgresql8.4-plpgsql postgresql8.3-plpgsql postgresql8.2-plpgsql
+Provides:	%{name}-plpgsql = %{version}-%{release}
+#Requires:	postgresql-server >= %{version}
+Obsoletes:	postgresql9.0-plpgsql postgresql8.5-plpgsql postgresql8.4-plpgsql postgresql8.3-plpgsql postgresql8.2-plpgsql
 
-%description	plpgsql
+%description -n %{plpgsql}
 PostgreSQL is an advanced Object-Relational database management system. The
 postgresql-plpgsql package contains the the PL/PgSQL procedural languages for
 the backend. PL/PgSQL is part of the core server package.
 
 %prep
 
-%setup -q -n %{name}-%{version}
-%patch0 -p1 -b .ossp-uuid_dir~
+%setup -q
+%apply_patches
 
 %build
-
 %serverbuild
-
+# it does not work with -fPIE and someone added that to the serverbuild macro...
+CFLAGS=`echo $CFLAGS|sed -e 's|-fPIE||g'`
+CXXFLAGS=`echo $CXXFLAGS|sed -e 's|-fPIE||g'`
+    #--libexecdir=%{_libexecdir}/%{bname} \
+	#--program-suffix=%{majorversion} \ didnt work
+	#--disable-static \
 %configure2_5x \
     --disable-rpath \
     --with-perl \
     --with-python \
-    --with-tcl --with-tclconfig=%{_libdir} \
+    --with-tcl \
+	--with-tclconfig=%{_libdir} \
     --with-openssl \
     --with-pam \
     --with-libxml \
@@ -293,10 +304,10 @@ mkdir -p %{buildroot}%{_sysconfdir}/pgsql
 #install -m755 src/Makefile.global %{buildroot}%{_includedir}/pgsql/
 
 # PGDATA needs removal of group and world permissions due to pg_pwd hole.
-install -d -m 700 %{buildroot}/var/lib/pgsql/data
+install -d -m 700 %{buildroot}%{pgdata}/data
 
 # backups of data go here...
-install -d -m 700 %{buildroot}/var/lib/pgsql/backups
+install -d -m 700 %{buildroot}%{pgdata}/backups
 
 # Create the multiple postmaster startup directory
 install -d -m 700 %{buildroot}/etc/sysconfig/pgsql
@@ -388,16 +399,15 @@ cat pltcl-%{majorversion}.lang >> pltcl.lst
 %find_lang plpgsql-%{majorversion}
 cat plpgsql-%{majorversion}.lang >> plpgsql.lst
 
-
 # taken directly in build dir.
 rm -fr %{buildroot}%{_datadir}/doc/postgresql/contrib/
 
 mkdir -p %{buildroot}/%_sys_macros_dir
 cat > %{buildroot}/%_sys_macros_dir/%{name}.macros <<EOF
 %%postgresql_version %{version}
-%%postgresql_major   %{current_major_version}
-%%postgresql_minor   %{current_minor_version}
-%%pgmodules_req Requires: %{?arch_tagged:%arch_tagged %{name}-server-ABI}%{?!arch_tagged:%{name}-server-ABI} >= %{current_major_version}
+%%postgresql_major   %{majorversion}
+%%postgresql_minor   %{minorversion}
+%%pgmodules_req Requires: %{?arch_tagged:%arch_tagged %{name}-server-ABI}%{?!arch_tagged:%{name}-server-ABI} >= %{majorversion}
 EOF
 
 cat %{SOURCE13} > postgresql.mdv.releasenote
@@ -412,9 +422,9 @@ Please read it.
 EOF
 
 # postgres' .profile and .bashrc
-install -D -m 700 %SOURCE10 %{buildroot}/var/lib/pgsql/.profile
+install -D -m 700 %SOURCE10 %{buildroot}%{pgdata}/.profile
 (
-cd %{buildroot}/var/lib/pgsql/
+cd %{buildroot}%{pgdata}/
 ln -s .profile .bashrc
 )
 
@@ -423,7 +433,7 @@ cat > %{buildroot}%_sysconfdir/sysconfig/postgresql <<EOF
 
 # The database location:
 # You probably won't change this
-# PGDATA=/var/lib/pgsql/data
+# PGDATA=%{pgdata}/data
 
 # What is the based locales for postgresql
 # Setting locales to C allow to use any encoding
@@ -436,40 +446,91 @@ LC_ALL=C
 EOF
 
 # cleanup
-rm -f %{buildroot}%{_libdir}/lib*.*a
+find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
+find %{buildroot} -type f -name "*.a" -exec rm -f {} ';'
 
-%pre server
-%_pre_useradd postgres /var/lib/pgsql /bin/bash
+%pre -n %{server}
+%_pre_useradd %{pguser} %{pgdata} /bin/bash
+# if upgrade
+if [ $1 -eq 1 ]; then
+	%__service %{name} stop
+	# if database was ever initialized
+	[ ! -f %{pgdata}/data/PG_VERSION ] && exit 0
+	previous_pgver=`cat %{pgdata}/data/PG_VERSION`
+	# condition: if upgrading major versions
+	[ $previous_pgver = %{majorversion} ] && exit 0
+	timestamp=`date '+%s'`
+	previous_pgdata="%{pgdata}$previous_pgver-$timestamp"
+	echo ""
+	echo "You currently have a database tree for Postgresql $previous_pgver"
+	# make a safe place for the old bins and copy them there
+	mkdir -p %{pgdata}/bin %{pgdata}/%{_lib}/%{name} %{pgdata}/share/%{name}/
+		previous_installed=`rpm -qa postgresql[0-9\.]*-server`
+		echo "INSTALLED PKG: $previous_installed"
+		for oldbin in $(rpm -ql $previous_installed | grep %{_bindir} );do
+			#echo "COPYING: $oldbin to %{pgdata}/bin"
+			cp $oldbin %{pgdata}/bin
+		done
+		for oldlib in $(rpm -ql $previous_installed | grep "%{_libdir}/%{name}" );do
+			#echo "COPYING: $oldlib to %{pgdata}/%{_lib}/%{name}"
+			cp $oldbin %{pgdata}/%{_lib}/%{name}
+		done
+		for olddata in $(rpm -ql $previous_installed | grep "%{_datadir}/%{name}" );do
+			#echo "COPYING: $olddata to %{pgdata}/share/%{name}"
+			cp -r $olddata %{pgdata}/share/%{name}
+		done
+	# backup old data & bins/libs/datadir to a unique name for upgrading
+	mv %{pgdata} $previous_pgdata
+	echo "The data for Postgresql $previous_pgver has been backed up in $previous_pgdata"
+	echo ""
+	# make sure the pid file is gone, it will make the upgrade error out
+	rm -f $previous_pgdata/data/postmaster.pid
+	# rm if present
+	rm -f /tmp/pg_upgrade.variables
+	# this has to be here because the variables do not cross pre to post
+cat >  /tmp/pg_upgrade.variables <<EOF
+CMDLINE1="pg_upgrade \ "
+CMDLINE2="   --old-datadir $previous_pgdata/data \ "
+CMDLINE3="   --new-datadir %{pgdata}/data \ "
+CMDLINE4="   --old-bindir $previous_pgdata/bin \ "
+CMDLINE5="   --new-bindir %{_bindir}"
+EOF
+fi
 
-[ ! -f %pgdata/data/PG_VERSION ] && exit 0
-mypgversion=`cat %pgdata/data/PG_VERSION`
-[ $mypgversion = %{current_major_version} ] && exit 0
-
-echo ""
-echo "You currently have database tree for Postgresql $mypgversion"
-echo "You must use postgresql${mypgversion}-server"
-echo "To update you Postgresql server, dump your databases"
-echo "delete /var/lib/pgsql/data/ content, upgrade the server, then"
-echo "restore your databases from your backup"
-echo ""
-
-exit 1
-
-%posttrans server
-
+%posttrans -n %{server}
 %_post_service %{name}
 
-%preun server
+%post -n %{server}
+if [ $1 -eq 1 ]; then
+%_post_service %{name}
+# the new database has to be initialized to be upgraded...
+%__service -f %{name}
+# the database can not be running while being upgraded...
+%__service %{name} stop
+	# define the upgrade cmd
+	source /tmp/pg_upgrade.variables
+	echo ""
+	echo "Now running the command to upgrade the database..."
+	echo $CMDLINE1
+	echo $CMDLINE2
+	echo $CMDLINE3
+	echo $CMDLINE4
+	echo $CMDLINE5
+	echo ""
+	echo "After a successful upgrade, you should verify you data."
+	echo ""
+	# upgrade cmd
+	su - %{pguser} -c "$CMDLINE1 $CMDLINE2 $CMDLINE3 $CMDLINE4 $CMDLINE5"
+fi
+
+%preun -n %{server}
+%__service %{name} stop
 %_preun_service %{name}
 
-%postun server
-%_postun_userdel postgres
-
-%clean
-rm -rf %{buildroot}
+%postun -n %{server}
+%_postun_userdel %{pguser}
 
 %files -f main.lst
-%defattr(-,root,root)
 %doc doc/KNOWN_BUGS doc/MISSING_FEATURES
 %doc COPYRIGHT README HISTORY doc/bug.template
 %{_bindir}/clusterdb
@@ -505,21 +566,17 @@ rm -rf %{buildroot}
 %_sys_macros_dir/%{name}.macros
 
 %files -n %{libname} -f %{libname}.lst
-%defattr(-,root,root)
 %{_libdir}/libpq.so.%{major}*
 
 %files -n %{libecpg} -f %{libecpg}.lst
-%defattr(-,root,root)
 %{_libdir}/libecpg.so.%{major_ecpg}*
 %{_libdir}/libecpg_compat.so.*
 %{_libdir}/libpgtypes.so.*
 
 %files docs
-%defattr(-,root,root)
 %doc %{_docdir}/%{name}-docs-%{version}
 
-%files contrib
-%defattr(-,root,root)
+%files -n %{contrib}
 %{_libdir}/postgresql/_int.so
 %{_libdir}/postgresql/btree_gist.so
 %{_libdir}/postgresql/chkpass.so
@@ -547,14 +604,11 @@ rm -rf %{buildroot}
 %{_libdir}/postgresql/pgrowlocks.so
 %{_libdir}/postgresql/sslinfo.so
 %{_libdir}/postgresql/pageinspect.so
-
-#%{_datadir}/postgresql/contrib/
 %{_bindir}/oid2name
 %{_bindir}/pgbench
 %{_bindir}/vacuumlo
 
-%files server -f server.lst
-%defattr(-,root,root)
+%files -n %{server} -f server.lst
 %{_initrddir}/postgresql
 %config(noreplace) %{_sysconfdir}/sysconfig/postgresql
 %doc README.urpmi postgresql.mdv.releasenote
@@ -567,7 +621,9 @@ rm -rf %{buildroot}
 %{_bindir}/pg_standby
 %{_bindir}/pg_archivecleanup
 %{_bindir}/pg_upgrade
+%{_bindir}/pg_config
 %{_mandir}/man1/initdb.1*
+%{_mandir}/man1/pg_config.1*
 %{_mandir}/man1/pg_controldata.*
 %{_mandir}/man1/pg_ctl.1*
 %{_mandir}/man1/pg_resetxlog.*
@@ -575,11 +631,11 @@ rm -rf %{buildroot}
 %{_mandir}/man1/postmaster.1*
 %dir %{_libdir}/postgresql
 %dir %{_datadir}/postgresql
-%attr(644,postgres,postgres) %config(noreplace) /var/lib/pgsql/.bashrc
-%attr(-,postgres,postgres) /var/lib/pgsql/.profile
-%attr(700,postgres,postgres) %dir %{pgdata}
-%attr(-,postgres,postgres) %{pgdata}/data
-%attr(700,postgres,postgres) %dir %{pgdata}/backups
+%attr(644,%{pguser},%{pguser}) %config(noreplace) %{pgdata}/.bashrc
+%attr(-,%{pguser},%{pguser}) %{pgdata}/.profile
+%attr(700,%{pguser},%{pguser}) %dir %{pgdata}
+%attr(-,%{pguser},%{pguser}) %{pgdata}/data
+%attr(700,%{pguser},%{pguser}) %dir %{pgdata}/backups
 %{_libdir}/postgresql/*_and_*.so
 %{_libdir}/postgresql/auth_delay.so
 %{_libdir}/postgresql/auto_explain.so
@@ -629,12 +685,10 @@ rm -rf %{buildroot}
 %{_datadir}/postgresql/tsearch_data
 %dir %{_datadir}/postgresql/extension
 %{_datadir}/postgresql/extension/*
-
 %attr(700,postgres,postgres) %dir /var/log/postgres
 %logrotatedir/%{name}
 
 %files devel -f devel.lst
-%defattr(-,root,root)
 # %doc doc/TODO doc/TODO.detail
 %{_includedir}/*
 %{_bindir}/ecpg
@@ -644,30 +698,25 @@ rm -rf %{buildroot}
 %{_libdir}/libpq.so
 %{_libdir}/postgresql/pgxs/
 %{_mandir}/man1/ecpg.1*
-%{_bindir}/pg_config
-%{_mandir}/man1/pg_config.1*
 %{_mandir}/man3/SPI_*.3*
 %{_mandir}/man3/dblink*.3*
 
-%files pl
-%defattr(-,root,root)
+%files -n %{metapl}
+# metapkg
 
-%files plpython -f plpython.lst
-%defattr(-,root,root)
+%files -n %{plpython} -f plpython.lst
 %{_libdir}/postgresql/plpython*.so
 
-%files plperl -f plperl.lst
-%defattr(-,root,root)
+%files -n %{plperl} -f plperl.lst
 %{_libdir}/postgresql/plperl.so
 
-%files pltcl -f pltcl.lst
-%defattr(-,root,root)
+%files -n %{pltcl} -f pltcl.lst
 %{_libdir}/postgresql/pltcl.so
 %{_bindir}/pltcl_delmod
 %{_bindir}/pltcl_listmod
 %{_bindir}/pltcl_loadmod
 %{_datadir}/postgresql/unknown.pltcl
 
-%files plpgsql -f plpgsql.lst
-%defattr(-,root,root)
+%files -n %{plpgsql} -f plpgsql.lst
 %{_libdir}/postgresql/plpgsql.so
+
