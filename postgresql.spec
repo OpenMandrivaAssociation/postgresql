@@ -7,8 +7,8 @@
 %define libname %mklibname pq %{major}
 %define libecpg %mklibname ecpg %{major_ecpg}
 
-%define majorversion 9.1
-%define minorversion 1
+%define majorversion 9.2
+%define minorversion 3
 %define bname		%{name}%{majorversion}
 %define server		%{name}-server
 %define contrib		%{name}-contrib
@@ -29,17 +29,18 @@
 
 Summary: 	PostgreSQL client programs and libraries
 Name:		postgresql
-Version: 	9.1.3
+Version: 	%majorversion.%minorversion
 Release: 	1
 License:	BSD
 Group:		Databases
 URL:		http://www.postgresql.org/ 
 Source0:	ftp://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.bz2
-Source1:	%{SOURCE0}.md5
+Source1:	ftp://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.bz2.md5
 Source10:	postgres.profile
 Source11:	postgresql.init
 Source13:	postgresql.mdv.releasenote
 Patch0:		postgresql-9.0.4_ossp-uuid-dir.patch
+#Patch1:		postgresql-9.2.3-plperl-soname.patch
 BuildRequires:	bison
 BuildRequires:	flex
 BuildRequires:	openssl-devel
@@ -273,7 +274,7 @@ CXXFLAGS=`echo $CXXFLAGS|sed -e 's|-fPIE||g'`
 %endif
 
 # $(rpathdir) come from Makefile
-perl -pi -e 's|^all:|LINK.shared=\$(COMPILER) -shared -Wl,-rpath,\$(rpathdir),-soname,\$(soname)\nall:|' src/pl/plperl/GNUmakefile
+#perl -pi -e 's|^all:|LINK.shared=\$(COMPILER) -shared -Wl,-rpath,\$(rpathdir),-soname,\$(soname)\nall:|' src/pl/plperl/GNUmakefile
 
 # nuke -Wl,--no-undefined
 perl -pi -e "s|-Wl,--no-undefined||g" src/Makefile.global
@@ -543,8 +544,10 @@ fi
 %{_bindir}/pg_basebackup
 %{_bindir}/pg_dump
 %{_bindir}/pg_dumpall
+%{_bindir}/pg_receivexlog
 %{_bindir}/pg_restore
 %{_bindir}/pg_test_fsync
+%{_bindir}/pg_test_timing
 %{_bindir}/psql
 %{_bindir}/reindexdb
 %{_bindir}/vacuumdb
@@ -558,7 +561,10 @@ fi
 %{_mandir}/man1/pg_basebackup.*
 %{_mandir}/man1/pg_dump.*
 %{_mandir}/man1/pg_dumpall.*
+%{_mandir}/man1/pg_receivexlog.1*
 %{_mandir}/man1/pg_restore.*
+%{_mandir}/man1/pg_test_fsync.1*
+%{_mandir}/man1/pg_test_timing.1*
 %{_mandir}/man1/psql.*
 %{_mandir}/man1/reindexdb.*
 %{_mandir}/man1/vacuumdb.*
@@ -593,6 +599,7 @@ fi
 %{_libdir}/postgresql/refint.so
 %{_libdir}/postgresql/seg.so
 %{_libdir}/postgresql/tablefunc.so
+%{_libdir}/postgresql/tcn.so
 %{_libdir}/postgresql/timetravel.so
 %{_libdir}/postgresql/pg_trgm.so
 %{_libdir}/postgresql/autoinc.so
@@ -607,6 +614,9 @@ fi
 %{_bindir}/oid2name
 %{_bindir}/pgbench
 %{_bindir}/vacuumlo
+%{_mandir}/man1/oid2name.1*
+%{_mandir}/man1/pgbench.1*
+%{_mandir}/man1/vacuumlo.1*
 
 %files -n %{server} -f server.lst
 %{_initrddir}/postgresql
@@ -627,6 +637,7 @@ fi
 %{_mandir}/man1/pg_controldata.*
 %{_mandir}/man1/pg_ctl.1*
 %{_mandir}/man1/pg_resetxlog.*
+%{_mandir}/man1/pg_upgrade.1*
 %{_mandir}/man1/postgres.1*
 %{_mandir}/man1/postmaster.1*
 %dir %{_libdir}/postgresql
@@ -687,6 +698,8 @@ fi
 %{_datadir}/postgresql/extension/*
 %attr(700,postgres,postgres) %dir /var/log/postgres
 %logrotatedir/%{name}
+%{_mandir}/man1/pg_archivecleanup.1*
+%{_mandir}/man1/pg_standby.1*
 
 %files devel -f devel.lst
 # %doc doc/TODO doc/TODO.detail
