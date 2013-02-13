@@ -1,0 +1,3 @@
+# Workaround for a postgresql bug -- the -server %preun is incorrectly
+# seen as empty.
+addFilter("E: empty-%preun")

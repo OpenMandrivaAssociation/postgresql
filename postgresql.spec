@@ -37,6 +37,7 @@ Source1:	ftp://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.t
 Source10:	postgres.profile
 Source11:	postgresql.init
 Source13:	postgresql.mdv.releasenote
+Source100:	%name.rpmlintrc
 Patch0:		postgresql-9.0.4_ossp-uuid-dir.patch
 #Patch1:		postgresql-9.2.3-plperl-soname.patch
 BuildRequires:	bison
