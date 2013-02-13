@@ -1,6 +1,4 @@
-%define _requires_exceptions devel(libtcl
-%define perl_version %(rpm -q --qf "%{VERSION}" perl)
-%define perl_epoch %(rpm -q --qf "%{EPOCH}" perl)
+%define __noautoreq devel\\(libtcl
 
 %define major 5
 %define major_ecpg 6
