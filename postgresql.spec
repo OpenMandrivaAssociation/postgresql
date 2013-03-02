@@ -28,7 +28,7 @@
 Summary: 	PostgreSQL client programs and libraries
 Name:		postgresql
 Version: 	%majorversion.%minorversion
-Release: 	1
+Release: 	2
 License:	BSD
 Group:		Databases
 URL:		http://www.postgresql.org/ 
@@ -630,7 +630,6 @@ fi
 %{_bindir}/pg_standby
 %{_bindir}/pg_archivecleanup
 %{_bindir}/pg_upgrade
-%{_bindir}/pg_config
 %{_mandir}/man1/initdb.1*
 %{_mandir}/man1/pg_config.1*
 %{_mandir}/man1/pg_controldata.*
@@ -704,6 +703,7 @@ fi
 # %doc doc/TODO doc/TODO.detail
 %{_includedir}/*
 %{_bindir}/ecpg
+%{_bindir}/pg_config
 %{_libdir}/libecpg_compat.so
 %{_libdir}/libecpg.so
 %{_libdir}/libpgtypes.so
