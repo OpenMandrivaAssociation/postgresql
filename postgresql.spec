@@ -28,7 +28,7 @@
 Summary: 	PostgreSQL client programs and libraries
 Name:		postgresql
 Version: 	%majorversion.%minorversion
-Release: 	2
+Release: 	3
 License:	BSD
 Group:		Databases
 URL:		http://www.postgresql.org/ 
