@@ -631,7 +631,6 @@ fi
 %{_bindir}/pg_archivecleanup
 %{_bindir}/pg_upgrade
 %{_mandir}/man1/initdb.1*
-%{_mandir}/man1/pg_config.1*
 %{_mandir}/man1/pg_controldata.*
 %{_mandir}/man1/pg_ctl.1*
 %{_mandir}/man1/pg_resetxlog.*
@@ -710,6 +709,7 @@ fi
 %{_libdir}/libpq.so
 %{_libdir}/postgresql/pgxs/
 %{_mandir}/man1/ecpg.1*
+%{_mandir}/man1/pg_config.1*
 %{_mandir}/man3/SPI_*.3*
 %{_mandir}/man3/dblink*.3*
 
