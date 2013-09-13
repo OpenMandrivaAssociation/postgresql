@@ -1,4 +1,4 @@
-%define __noautoreq devel\\(libtcl
+%define __noautoreq devel\\(libtcl)
 
 %define major 5
 %define major_ecpg 6
@@ -20,15 +20,12 @@
 %define pguser postgres
 %define logrotatedir %{_sysconfdir}/logrotate.d
 
-%define withuuid 0
-%if %mdvver >= 201100
-%define withuuid 1
-%endif
+%bcond_without	uuid
 
 Summary: 	PostgreSQL client programs and libraries
 Name:		postgresql
 Version: 	%majorversion.%minorversion
-Release: 	3
+Release: 	4
 License:	BSD
 Group:		Databases
 URL:		http://www.postgresql.org/ 
@@ -51,7 +48,7 @@ BuildRequires:	tcl-devel
 BuildRequires:	libxml2-devel
 BuildRequires:	libxslt-devel
 BuildRequires:	zlib-devel
-%if %withuuid
+%if %{with uuid}
 BuildRequires:  ossp-uuid-devel >= 1.6.2-5
 %endif
 # Need to build doc
@@ -268,7 +265,7 @@ CXXFLAGS=`echo $CXXFLAGS|sed -e 's|-fPIE||g'`
     --prefix=%{_prefix} \
     --sysconfdir=%{_sysconfdir}/pgsql \
     --enable-nls \
-%if %withuuid
+%if %{with uuid}
     --with-ossp-uuid
 %endif
 
@@ -278,7 +275,7 @@ CXXFLAGS=`echo $CXXFLAGS|sed -e 's|-fPIE||g'`
 # nuke -Wl,--no-undefined
 perl -pi -e "s|-Wl,--no-undefined||g" src/Makefile.global
 
-%if %withuuid
+%if %{with uuid}
 # bork...
 echo "#define HAVE_OSSP_UUID_H 1" >> src/include/pg_config.h
 %endif
@@ -293,8 +290,6 @@ popd
 make check
 
 %install
-rm -rf %{buildroot}
-
 make DESTDIR=%{buildroot} install-world install-docs
 
 # install odbcinst.ini
@@ -452,79 +447,25 @@ find %{buildroot} -type f -name "*.a" -exec rm -f {} ';'
 %pre -n %{server}
 %_pre_useradd %{pguser} %{pgdata} /bin/bash
 # if upgrade
-if [ $1 -eq 1 ]; then
-	%__service %{name} stop
-	# if database was ever initialized
-	[ ! -f %{pgdata}/data/PG_VERSION ] && exit 0
-	previous_pgver=`cat %{pgdata}/data/PG_VERSION`
-	# condition: if upgrading major versions
-	[ $previous_pgver = %{majorversion} ] && exit 0
-	timestamp=`date '+%s'`
-	previous_pgdata="%{pgdata}$previous_pgver-$timestamp"
-	echo ""
-	echo "You currently have a database tree for Postgresql $previous_pgver"
-	# make a safe place for the old bins and copy them there
-	mkdir -p %{pgdata}/bin %{pgdata}/%{_lib}/%{name} %{pgdata}/share/%{name}/
-		previous_installed=`rpm -qa postgresql[0-9\.]*-server`
-		echo "INSTALLED PKG: $previous_installed"
-		for oldbin in $(rpm -ql $previous_installed | grep %{_bindir} );do
-			#echo "COPYING: $oldbin to %{pgdata}/bin"
-			cp $oldbin %{pgdata}/bin
-		done
-		for oldlib in $(rpm -ql $previous_installed | grep "%{_libdir}/%{name}" );do
-			#echo "COPYING: $oldlib to %{pgdata}/%{_lib}/%{name}"
-			cp $oldbin %{pgdata}/%{_lib}/%{name}
-		done
-		for olddata in $(rpm -ql $previous_installed | grep "%{_datadir}/%{name}" );do
-			#echo "COPYING: $olddata to %{pgdata}/share/%{name}"
-			cp -r $olddata %{pgdata}/share/%{name}
-		done
-	# backup old data & bins/libs/datadir to a unique name for upgrading
-	mv %{pgdata} $previous_pgdata
-	echo "The data for Postgresql $previous_pgver has been backed up in $previous_pgdata"
-	echo ""
-	# make sure the pid file is gone, it will make the upgrade error out
-	rm -f $previous_pgdata/data/postmaster.pid
-	# rm if present
-	rm -f /tmp/pg_upgrade.variables
-	# this has to be here because the variables do not cross pre to post
-cat >  /tmp/pg_upgrade.variables <<EOF
-CMDLINE1="pg_upgrade \ "
-CMDLINE2="   --old-datadir $previous_pgdata/data \ "
-CMDLINE3="   --new-datadir %{pgdata}/data \ "
-CMDLINE4="   --old-bindir $previous_pgdata/bin \ "
-CMDLINE5="   --new-bindir %{_bindir}"
-EOF
-fi
+
+[ ! -f %{pgdata}/data/PG_VERSION ] && exit 0
+mypgversion=`cat %{pgdata}/data/PG_VERSION`
+[ $mypgversion = %{current_major_version} ] && exit 0
+
+echo ""
+echo "You currently have database tree for Postgresql $mypgversion"
+echo "You must use postgresql${mypgversion}-server"
+echo "To update you Postgresql server, dump your databases"
+echo "delete /var/lib/pgsql/data/ content, upgrade the server, then"
+echo "restore your databases from your backup"
+echo ""
+
+exit 1
 
 %posttrans -n %{server}
 %_post_service %{name}
 
-%post -n %{server}
-if [ $1 -eq 1 ]; then
-%_post_service %{name}
-# the new database has to be initialized to be upgraded...
-%__service -f %{name}
-# the database can not be running while being upgraded...
-%__service %{name} stop
-	# define the upgrade cmd
-	source /tmp/pg_upgrade.variables
-	echo ""
-	echo "Now running the command to upgrade the database..."
-	echo $CMDLINE1
-	echo $CMDLINE2
-	echo $CMDLINE3
-	echo $CMDLINE4
-	echo $CMDLINE5
-	echo ""
-	echo "After a successful upgrade, you should verify you data."
-	echo ""
-	# upgrade cmd
-	su - %{pguser} -c "$CMDLINE1 $CMDLINE2 $CMDLINE3 $CMDLINE4 $CMDLINE5"
-fi
-
 %preun -n %{server}
-%__service %{name} stop
 %_preun_service %{name}
 
 %postun -n %{server}
@@ -663,7 +604,7 @@ fi
 %{_libdir}/postgresql/test_parser.so
 %{_libdir}/postgresql/tsearch2.so
 %{_libdir}/postgresql/unaccent.so
-%if %withuuid
+%if %{with uuid}
 %{_libdir}/postgresql/uuid-ossp.so
 %endif
 %{_datadir}/postgresql/postgres.bki
