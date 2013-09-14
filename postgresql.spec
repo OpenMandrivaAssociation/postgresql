@@ -25,7 +25,7 @@
 Summary: 	PostgreSQL client programs and libraries
 Name:		postgresql
 Version: 	%majorversion.%minorversion
-Release: 	4
+Release: 	5
 License:	BSD
 Group:		Databases
 URL:		http://www.postgresql.org/ 
@@ -408,7 +408,7 @@ EOF
 cat %{SOURCE13} > postgresql.mdv.releasenote
 cat > README.urpmi <<EOF
 You just installed or updated %{name} server.
-You can find important information about mandriva %{name} rpms and database
+You can find important information about OpenMandriva %{name} rpms and database
 management in:
 
 %{_defaultdocdir}/%{name}-server/postgresql.mdv.releasenote
