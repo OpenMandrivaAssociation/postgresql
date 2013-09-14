@@ -1,4 +1,4 @@
-This file contains important information about PostgreSQL Mandriva's rpms.
+This file contains important information about PostgreSQL OpenMandriva's rpms.
 
 This document is dedicated to postgres administrators and or system
 administrators.
@@ -36,7 +36,7 @@ you'll have to dump and restore your databases yourself.
 
 - pg_autovacuum
     pg_autovacuum is a daemon which monitor database and run vacuum and analyze
-    when needed. Introduced as a postgresql contrib in version 8.0, mandriva rpm was
+    when needed. Introduced as a postgresql contrib in version 8.0, OpenMandriva rpm was
     providing an initscript to start the daemon at boot.
     This feature is now included into the backend itself, it is disabled by
     default. Set autovacuum parameter to true into postgresql.conf
