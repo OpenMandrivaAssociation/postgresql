@@ -25,18 +25,20 @@
 Summary: 	PostgreSQL client programs and libraries
 Name:		postgresql
 Version: 	%majorversion.%minorversion
-Release: 	5
+Release: 	6
 License:	BSD
 Group:		Databases
 URL:		http://www.postgresql.org/ 
 Source0:	ftp://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.bz2
 Source1:	ftp://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.bz2.md5
 Source10:	postgres.profile
-Source11:	postgresql.init
-Source13:	postgresql.mdv.releasenote
+Source11:	postgresql.service
+Source12:	postgresql.tmpfiles.d
+Source13:	postgresql.omv.releasenote
+Source14:	postgresql_initdb.sh
+
 Source100:	%name.rpmlintrc
 Patch0:		postgresql-9.0.4_ossp-uuid-dir.patch
-#Patch1:		postgresql-9.2.3-plperl-soname.patch
 BuildRequires:	bison
 BuildRequires:	flex
 BuildRequires:	openssl-devel
@@ -135,7 +137,7 @@ install postgresql-server if you want to create and maintain your own
 PostgreSQL databases and/or your own PostgreSQL server. You also need to
 install the postgresql and postgresql-devel packages.
 
-After installing this package, please read postgresql.mdv.releasenote.
+After installing this package, please read postgresql.omv.releasenote.
 
 %package	docs
 Summary:	Extra documentation for PostgreSQL
@@ -307,6 +309,22 @@ install -d -m 700 %{buildroot}%{pgdata}/backups
 # Create the multiple postmaster startup directory
 install -d -m 700 %{buildroot}/etc/sysconfig/pgsql
 
+# install systemd units
+mkdir -p %{buildroot}%{_unitdir}
+install -m 644 %{SOURCE11} %{buildroot}%{_unitdir}/%{bname}.service
+
+# Create the directory for sockets.
+install -d -m 755 %{buildroot}/var/run/postgresql
+
+# ... and make a tmpfiles script to recreate it at reboot.
+mkdir -p %{buildroot}%{_tmpfilesdir}
+install -m 0644 %{SOURCE12} %{buildroot}%{_tmpfilesdir}/%{bname}.conf
+
+# install helper script for env initialisation 
+mkdir -p %{buildroot}%{_libexecdir}
+install -m 755 %{SOURCE14} %{buildroot}%{_libexecdir}/
+
+
 %if 0
 # tests. There are many files included here that are unnecessary, but include
 # them anyway for completeness.
@@ -329,8 +347,6 @@ cat > %{buildroot}%logrotatedir/%{name} <<EOF
     copytruncate
 }
 EOF
-
-install -D -m755 %{SOURCE11} %{buildroot}%{_initrddir}/postgresql
 
 mv %{buildroot}%{_docdir}/%{name}/html %{buildroot}%{_docdir}/%{name}-docs-%{version}
 
@@ -405,13 +421,13 @@ cat > %{buildroot}/%_sys_macros_dir/%{name}.macros <<EOF
 %%pgmodules_req Requires: %{?arch_tagged:%arch_tagged %{name}-server-ABI}%{?!arch_tagged:%{name}-server-ABI} >= %{majorversion}
 EOF
 
-cat %{SOURCE13} > postgresql.mdv.releasenote
+cat %{SOURCE13} > postgresql.omv.releasenote
 cat > README.urpmi <<EOF
 You just installed or updated %{name} server.
 You can find important information about OpenMandriva %{name} rpms and database
 management in:
 
-%{_defaultdocdir}/%{name}-server/postgresql.mdv.releasenote
+%{_defaultdocdir}/%{name}-server/postgresql.omv.releasenote
 
 Please read it.
 EOF
@@ -463,10 +479,11 @@ echo ""
 exit 1
 
 %posttrans -n %{server}
-%_post_service %{name}
+%_post_service %{bname}
+%tmpfiles_create %{bname}
 
 %preun -n %{server}
-%_preun_service %{name}
+%_preun_service %{bname}
 
 %postun -n %{server}
 %_postun_userdel %{pguser}
@@ -559,9 +576,10 @@ exit 1
 %{_mandir}/man1/vacuumlo.1*
 
 %files -n %{server} -f server.lst
-%{_initrddir}/postgresql
+%{_unitdir}/%{bname}.service
+%{_tmpfilesdir}/%{bname}.conf
 %config(noreplace) %{_sysconfdir}/sysconfig/postgresql
-%doc README.urpmi postgresql.mdv.releasenote
+%doc README.urpmi postgresql.omv.releasenote
 %{_bindir}/initdb
 %{_bindir}/pg_controldata
 %{_bindir}/pg_ctl
@@ -571,6 +589,7 @@ exit 1
 %{_bindir}/pg_standby
 %{_bindir}/pg_archivecleanup
 %{_bindir}/pg_upgrade
+%{_libexecdir}/postgresql_initdb.sh
 %{_mandir}/man1/initdb.1*
 %{_mandir}/man1/pg_controldata.*
 %{_mandir}/man1/pg_ctl.1*
