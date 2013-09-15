@@ -124,7 +124,7 @@ Requires(pre,postun): rpm-helper
 Requires(post,preun): update-alternatives
 # the client bins are needed for upgrading
 Requires:	postgresql >= %{version}-%{release}
-#Requires:	postgresql-plpgsql >= %{version}-%{release}
+Requires:	postgresql-plpgsql >= %{version}-%{release}
 Obsoletes:	postgresql9.0-server postgresql8.5-server postgresql8.4-server postgresql8.3-server postgresql8.2-server
 
 %description -n %{server}
