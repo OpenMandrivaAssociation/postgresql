@@ -321,8 +321,8 @@ mkdir -p %{buildroot}%{_tmpfilesdir}
 install -m 0644 %{SOURCE12} %{buildroot}%{_tmpfilesdir}/%{bname}.conf
 
 # install helper script for env initialisation 
-mkdir -p %{buildroot}%{_libexecdir}
-install -m 755 %{SOURCE14} %{buildroot}%{_libexecdir}/
+mkdir -p %{buildroot}%{_prefix}/libexec
+install -m 755 %{SOURCE14} %{buildroot}%{_prefix}/libexec
 
 
 %if 0
@@ -589,7 +589,7 @@ exit 1
 %{_bindir}/pg_standby
 %{_bindir}/pg_archivecleanup
 %{_bindir}/pg_upgrade
-%{_libexecdir}/postgresql_initdb.sh
+%{_prefix}/libexec/postgresql_initdb.sh
 %{_mandir}/man1/initdb.1*
 %{_mandir}/man1/pg_controldata.*
 %{_mandir}/man1/pg_ctl.1*
