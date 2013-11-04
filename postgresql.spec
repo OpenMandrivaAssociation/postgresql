@@ -5,8 +5,8 @@
 %define libname %mklibname pq %{major}
 %define libecpg %mklibname ecpg %{major_ecpg}
 
-%define majorversion 9.2
-%define minorversion 3
+%define majorversion 9.3
+%define minorversion 1
 %define bname		%{name}%{majorversion}
 %define server		%{name}-server
 %define contrib		%{name}-contrib
@@ -25,7 +25,7 @@
 Summary: 	PostgreSQL client programs and libraries
 Name:		postgresql
 Version: 	%majorversion.%minorversion
-Release: 	7
+Release: 	1
 License:	BSD
 Group:		Databases
 URL:		http://www.postgresql.org/ 
