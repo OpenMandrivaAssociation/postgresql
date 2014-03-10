@@ -6,7 +6,7 @@
 %define libecpg %mklibname ecpg %{major_ecpg}
 
 %define majorversion 9.3
-%define minorversion 1
+%define minorversion 3
 %define bname		%{name}%{majorversion}
 %define server		%{name}-server
 %define contrib		%{name}-contrib
