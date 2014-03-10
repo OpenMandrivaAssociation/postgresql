@@ -5,7 +5,7 @@
 %define libname %mklibname pq %{major}
 %define libecpg %mklibname ecpg %{major_ecpg}
 
-%define majorversion 9.2
+%define majorversion 9.3
 %define minorversion 3
 %define bname		%{name}%{majorversion}
 %define server		%{name}-server
@@ -25,7 +25,7 @@
 Summary: 	PostgreSQL client programs and libraries
 Name:		postgresql
 Version: 	%majorversion.%minorversion
-Release: 	8
+Release: 	1
 License:	BSD
 Group:		Databases
 URL:		http://www.postgresql.org/ 
@@ -501,10 +501,12 @@ exit 1
 %{_bindir}/pg_basebackup
 %{_bindir}/pg_dump
 %{_bindir}/pg_dumpall
+%{_bindir}/pg_isready
 %{_bindir}/pg_receivexlog
 %{_bindir}/pg_restore
 %{_bindir}/pg_test_fsync
 %{_bindir}/pg_test_timing
+%{_bindir}/pg_xlogdump
 %{_bindir}/psql
 %{_bindir}/reindexdb
 %{_bindir}/vacuumdb
@@ -518,10 +520,12 @@ exit 1
 %{_mandir}/man1/pg_basebackup.*
 %{_mandir}/man1/pg_dump.*
 %{_mandir}/man1/pg_dumpall.*
+%{_mandir}/man1/pg_isready.1*
 %{_mandir}/man1/pg_receivexlog.1*
 %{_mandir}/man1/pg_restore.*
 %{_mandir}/man1/pg_test_fsync.1*
 %{_mandir}/man1/pg_test_timing.1*
+%{_mandir}/man1/pg_xlogdump.1*
 %{_mandir}/man1/psql.*
 %{_mandir}/man1/reindexdb.*
 %{_mandir}/man1/vacuumdb.*
@@ -568,6 +572,8 @@ exit 1
 %{_libdir}/postgresql/pgrowlocks.so
 %{_libdir}/postgresql/sslinfo.so
 %{_libdir}/postgresql/pageinspect.so
+%{_libdir}/postgresql/postgres_fdw.so
+%{_libdir}/postgresql/worker_spi.so
 %{_bindir}/oid2name
 %{_bindir}/pgbench
 %{_bindir}/vacuumlo
@@ -668,6 +674,7 @@ exit 1
 %{_libdir}/libpgtypes.so
 %{_libdir}/libpq.so
 %{_libdir}/postgresql/pgxs/
+%{_libdir}/pkgconfig/*.pc
 %{_mandir}/man1/ecpg.1*
 %{_mandir}/man1/pg_config.1*
 %{_mandir}/man3/SPI_*.3*
