@@ -39,6 +39,7 @@ Source14:	postgresql_initdb.sh
 
 Source100:	%name.rpmlintrc
 Patch0:		postgresql-9.0.4_ossp-uuid-dir.patch
+Patch1:		postgresql-var-run-socket.patch
 BuildRequires:	bison
 BuildRequires:	flex
 BuildRequires:	openssl-devel
