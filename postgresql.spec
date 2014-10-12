@@ -246,19 +246,19 @@ the backend. PL/PgSQL is part of the core server package.
 %apply_patches
 
 %build
-%serverbuild
+%setup_compile_flags
 # it does not work with -fPIE and someone added that to the serverbuild macro...
 CFLAGS=`echo $CFLAGS|sed -e 's|-fPIE||g'`
 CXXFLAGS=`echo $CXXFLAGS|sed -e 's|-fPIE||g'`
     #--libexecdir=%{_libexecdir}/%{bname} \
 	#--program-suffix=%{majorversion} \ didnt work
 	#--disable-static \
-%configure2_5x \
+%configure \
     --disable-rpath \
     --with-perl \
     --with-python \
     --with-tcl \
-	--with-tclconfig=%{_libdir} \
+    --with-tclconfig=%{_libdir} \
     --with-openssl \
     --with-pam \
     --with-libxml \
