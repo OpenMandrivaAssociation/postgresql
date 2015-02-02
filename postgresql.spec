@@ -498,6 +498,7 @@ exit 1
 %{_bindir}/pg_dumpall
 %{_bindir}/pg_isready
 %{_bindir}/pg_receivexlog
+%{_bindir}/pg_recvlogical
 %{_bindir}/pg_restore
 %{_bindir}/pg_test_fsync
 %{_bindir}/pg_test_timing
@@ -517,6 +518,7 @@ exit 1
 %{_mandir}/man1/pg_dumpall.*
 %{_mandir}/man1/pg_isready.1*
 %{_mandir}/man1/pg_receivexlog.1*
+%{_mandir}/man1/pg_recvlogical.1*
 %{_mandir}/man1/pg_restore.*
 %{_mandir}/man1/pg_test_fsync.1*
 %{_mandir}/man1/pg_test_timing.1*
@@ -564,6 +566,7 @@ exit 1
 %{_libdir}/postgresql/hstore.so
 %{_libdir}/postgresql/isn.so
 %{_libdir}/postgresql/pg_freespacemap.so
+%{_libdir}/postgresql/pg_prewarm.so
 %{_libdir}/postgresql/pgrowlocks.so
 %{_libdir}/postgresql/sslinfo.so
 %{_libdir}/postgresql/pageinspect.so
@@ -621,7 +624,9 @@ exit 1
 %{_libdir}/postgresql/pg_stat_statements.so
 %{_libdir}/postgresql/pg_upgrade_support.so
 %{_libdir}/postgresql/pgxml.so
+%{_libdir}/postgresql/test_decoding.so
 %{_libdir}/postgresql/test_parser.so
+%{_libdir}/postgresql/test_shm_mq.so
 %{_libdir}/postgresql/tsearch2.so
 %{_libdir}/postgresql/unaccent.so
 %if %{with uuid}
