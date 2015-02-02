@@ -38,7 +38,7 @@ Source13:	postgresql.omv.releasenote
 Source14:	postgresql_initdb.sh
 
 Source100:	%name.rpmlintrc
-Patch0:		postgresql-9.0.4_ossp-uuid-dir.patch
+Patch0:		postgresql-9.4.0_ossp-uuid-dir.patch
 Patch1:		postgresql-var-run-socket.patch
 BuildRequires:	bison
 BuildRequires:	flex
@@ -263,7 +263,7 @@ the backend. PL/PgSQL is part of the core server package.
     --sysconfdir=%{_sysconfdir}/pgsql \
     --enable-nls \
 %if %{with uuid}
-    --with-ossp-uuid
+    --with-uuid=ossp
 %endif
 
 # $(rpathdir) come from Makefile
