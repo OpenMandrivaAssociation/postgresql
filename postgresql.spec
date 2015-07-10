@@ -24,7 +24,7 @@
 
 Summary: 	PostgreSQL client programs and libraries
 Name:		postgresql
-Version: 	9.3.6
+Version: 	9.3.9
 Release: 	1
 License:	BSD
 Group:		Databases
