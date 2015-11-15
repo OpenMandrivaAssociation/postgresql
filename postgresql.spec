@@ -1,5 +1,7 @@
 %define __noautoreq devel\\(libtcl)
 
+%define _disable_lto 1
+
 %define major 5
 %define major_ecpg 6
 %define libname %mklibname pq %{major}
@@ -247,6 +249,7 @@ the backend. PL/PgSQL is part of the core server package.
 
 %build
 %setup_compile_flags
+
 %configure \
     --disable-rpath \
     --with-perl \
@@ -277,7 +280,9 @@ perl -pi -e "s|-Wl,--no-undefined||g" src/Makefile.global
 echo "#define HAVE_OSSP_UUID_H 1" >> src/include/pg_config.h
 %endif
 
-%make world
+# python_libspec incorrectly uses the static python lib causing failures due to lto
+# in any case we should use the shared one
+%make world python_libspec=`python --libs`
 
 pushd src/test
 make all
