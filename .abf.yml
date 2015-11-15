@@ -1,4 +1,5 @@
 removed_sources:
   postgresql-9.3.6.tar.bz2: fb6141f9f758ad484bc6991c7c1f960ca8b6b866
-sources:
   postgresql-9.3.9.tar.bz2: 0a1ea210e12bc07ac8c528c8997b90bd5d41df6e
+sources:
+  postgresql-9.3.10.tar.bz2: f145552bb679f2d5edabfab0d4b9a9203c5bfe77
