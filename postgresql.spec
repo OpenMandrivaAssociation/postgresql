@@ -45,7 +45,7 @@ BuildRequires:	flex
 BuildRequires:	openssl-devel
 BuildRequires:	pam-devel
 BuildRequires:	perl-devel
-BuildRequires:	pkconfig(python3)
+BuildRequires:	pkgconfig(python3)
 BuildRequires:	readline-devel
 BuildRequires:	tcl-devel
 BuildRequires:	libxml2-devel
