@@ -24,13 +24,13 @@
 
 Summary: 	PostgreSQL client programs and libraries
 Name:		postgresql
-Version: 	9.3.10
+Version: 	9.3.11
 Release: 	1
 License:	BSD
 Group:		Databases
 URL:		http://www.postgresql.org/ 
-Source0:	ftp://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.bz2
-Source1:	ftp://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.bz2.md5
+Source0:	http://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.bz2
+Source1:	http://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.bz2.md5
 Source10:	postgres.profile
 Source11:	postgresql.service
 Source12:	postgresql.tmpfiles.d
