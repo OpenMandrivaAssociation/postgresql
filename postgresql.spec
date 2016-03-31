@@ -26,7 +26,7 @@
 
 Summary: 	PostgreSQL client programs and libraries
 Name:		postgresql
-Version: 	9.4.6
+Version: 	9.5.2
 Release: 	1
 License:	BSD
 Group:		Databases
@@ -41,7 +41,7 @@ Source14:	postgresql_initdb.sh
 
 Source100:	%name.rpmlintrc
 Patch0:		postgresql-9.4.0_ossp-uuid-dir.patch
-Patch1:		postgresql-var-run-socket.patch
+Patch1:		postgresql-run-socket.patch
 BuildRequires:	bison
 BuildRequires:	flex
 BuildRequires:	openssl-devel
@@ -379,6 +379,8 @@ cat pg_ctl-%{majorversion}.lang >> server.lst
 cat pg_resetxlog-%{majorversion}.lang >> server.lst
 %find_lang postgres-%{majorversion}
 cat postgres-%{majorversion}.lang >> server.lst
+%find_lang pg_rewind-%{majorversion}
+cat pg_rewind-%{majorversion}.lang >>server.lst
 
 # main
 %find_lang pg_config-%{majorversion}
@@ -576,7 +578,6 @@ exit 1
 %{_libdir}/postgresql/sslinfo.so
 %{_libdir}/postgresql/pageinspect.so
 %{_libdir}/postgresql/postgres_fdw.so
-%{_libdir}/postgresql/worker_spi.so
 %{_bindir}/oid2name
 %{_bindir}/pgbench
 %{_bindir}/vacuumlo
@@ -595,6 +596,7 @@ exit 1
 %{_bindir}/pg_resetxlog
 %{_bindir}/postgres
 %{_bindir}/postmaster
+%{_bindir}/pg_rewind
 %{_bindir}/pg_standby
 %{_bindir}/pg_archivecleanup
 %{_bindir}/pg_upgrade
@@ -603,6 +605,7 @@ exit 1
 %{_mandir}/man1/pg_controldata.*
 %{_mandir}/man1/pg_ctl.1*
 %{_mandir}/man1/pg_resetxlog.*
+%{_mandir}/man1/pg_rewind.*
 %{_mandir}/man1/pg_upgrade.1*
 %{_mandir}/man1/postgres.1*
 %{_mandir}/man1/postmaster.1*
@@ -621,17 +624,15 @@ exit 1
 %{_libdir}/postgresql/dict_int.so
 %{_libdir}/postgresql/dict_snowball.so
 %{_libdir}/postgresql/dict_xsyn.so
-%{_libdir}/postgresql/dummy_seclabel.so
 %{_libdir}/postgresql/euc2004_sjis2004.so
 %{_libdir}/postgresql/file_fdw.so
 %{_libdir}/postgresql/libpqwalreceiver.so
 %{_libdir}/postgresql/passwordcheck.so
 %{_libdir}/postgresql/pg_stat_statements.so
-%{_libdir}/postgresql/pg_upgrade_support.so
 %{_libdir}/postgresql/pgxml.so
 %{_libdir}/postgresql/test_decoding.so
-%{_libdir}/postgresql/test_parser.so
-%{_libdir}/postgresql/test_shm_mq.so
+%{_libdir}/postgresql/tsm_system_rows.so
+%{_libdir}/postgresql/tsm_system_time.so
 %{_libdir}/postgresql/tsearch2.so
 %{_libdir}/postgresql/unaccent.so
 %if %{with uuid}
@@ -689,9 +690,12 @@ exit 1
 # metapkg
 
 %files -n %{plpython} -f plpython.lst
+%{_libdir}/postgresql/hstore_plpython3.so
 %{_libdir}/postgresql/plpython*.so
+%{_libdir}/postgresql/ltree_plpython3.so
 
 %files -n %{plperl} -f plperl.lst
+%{_libdir}/postgresql/hstore_plperl.so
 %{_libdir}/postgresql/plperl.so
 
 %files -n %{pltcl} -f pltcl.lst
