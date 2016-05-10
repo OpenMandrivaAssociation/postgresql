@@ -27,7 +27,7 @@
 Summary: 	PostgreSQL client programs and libraries
 Name:		postgresql
 Version: 	9.5.2
-Release: 	1
+Release: 	2
 License:	BSD
 Group:		Databases
 URL:		http://www.postgresql.org/ 
@@ -468,7 +468,7 @@ find %{buildroot} -type f -name "*.a" -exec rm -f {} ';'
 
 [ ! -f %{pgdata}/data/PG_VERSION ] && exit 0
 mypgversion=`cat %{pgdata}/data/PG_VERSION`
-[ $mypgversion = %{current_major_version} ] && exit 0
+[ $mypgversion = %{majorversion} ] && exit 0
 
 echo ""
 echo "You currently have database tree for Postgresql $mypgversion"
