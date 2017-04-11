@@ -26,7 +26,7 @@
 
 Summary: 	PostgreSQL client programs and libraries
 Name:		postgresql
-Version: 	9.5.5
+Version: 	9.6.2
 Release: 	1
 License:	BSD
 Group:		Databases
@@ -40,7 +40,6 @@ Source13:	postgresql.omv.releasenote
 Source14:	postgresql_initdb.sh
 
 Source100:	%name.rpmlintrc
-Patch0:		postgresql-9.4.0_ossp-uuid-dir.patch
 Patch1:		postgresql-run-socket.patch
 BuildRequires:	bison
 BuildRequires:	flex
@@ -266,7 +265,8 @@ the backend. PL/PgSQL is part of the core server package.
     --sysconfdir=%{_sysconfdir}/pgsql \
     --enable-nls \
 %if %{with uuid}
-    --with-uuid=ossp
+    --with-uuid=ossp \
+    --with-includes=%{_includedir}/ossp-uuid
 %endif
 
 # $(rpathdir) come from Makefile
@@ -549,6 +549,7 @@ exit 1
 
 %files -n %{contrib}
 %{_libdir}/postgresql/_int.so
+%{_libdir}/postgresql/bloom.so
 %{_libdir}/postgresql/btree_gist.so
 %{_libdir}/postgresql/chkpass.so
 %{_libdir}/postgresql/cube.so
@@ -574,6 +575,7 @@ exit 1
 %{_libdir}/postgresql/isn.so
 %{_libdir}/postgresql/pg_freespacemap.so
 %{_libdir}/postgresql/pg_prewarm.so
+%{_libdir}/postgresql/pg_visibility.so
 %{_libdir}/postgresql/pgrowlocks.so
 %{_libdir}/postgresql/sslinfo.so
 %{_libdir}/postgresql/pageinspect.so
