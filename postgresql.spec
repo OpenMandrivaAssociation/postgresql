@@ -7,7 +7,7 @@
 %define libname %mklibname pq %{major}
 %define libecpg %mklibname ecpg %{major_ecpg}
 
-%define majorversion %(echo %{version} | cut -d. -f1-2)
+%define majorversion %(echo %{version} | cut -d. -f1)
 %define minorversion %(echo %{version} | cut -d. -f3)
 %define bname		%{name}%{majorversion}
 %define server		%{name}-server
@@ -26,13 +26,13 @@
 
 Summary: 	PostgreSQL client programs and libraries
 Name:		postgresql
-Version: 	9.6.4
+Version: 	10.0
 Release: 	1
 License:	BSD
 Group:		Databases
 URL:		http://www.postgresql.org/ 
-Source0:	ftp://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.bz2
-Source1:	ftp://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.bz2.md5
+Source0:	http://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.bz2
+Source1:	http://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.bz2.md5
 Source10:	postgres.profile
 Source11:	postgresql.service
 Source12:	postgresql.tmpfiles.d
@@ -249,6 +249,7 @@ the backend. PL/PgSQL is part of the core server package.
 %build
 %setup_compile_flags
 
+CC=gcc CXX=g++ \
 %configure \
     --disable-rpath \
     --with-perl \
@@ -375,12 +376,14 @@ cat pg_basebackup-%{majorversion}.lang >> server.lst
 cat pg_controldata-%{majorversion}.lang >> server.lst
 %find_lang pg_ctl-%{majorversion}
 cat pg_ctl-%{majorversion}.lang >> server.lst
-%find_lang pg_resetxlog-%{majorversion}
-cat pg_resetxlog-%{majorversion}.lang >> server.lst
 %find_lang postgres-%{majorversion}
 cat postgres-%{majorversion}.lang >> server.lst
 %find_lang pg_rewind-%{majorversion}
 cat pg_rewind-%{majorversion}.lang >>server.lst
+%find_lang pg_archivecleanup-%{majorversion}
+cat pg_archivecleanup-%{majorversion}.lang >>server.lst
+%find_lang pg_upgrade-%{majorversion}
+cat pg_upgrade-%{majorversion}.lang >>server.lst
 
 # main
 %find_lang pg_config-%{majorversion}
@@ -391,6 +394,15 @@ cat pg_dump-%{majorversion}.lang >> main.lst
 cat pgscripts-%{majorversion}.lang >> main.lst
 %find_lang psql-%{majorversion}
 cat psql-%{majorversion}.lang >>main.lst
+
+%find_lang pg_resetwal-%{majorversion}
+cat pg_resetwal-%{majorversion}.lang >>main.lst
+%find_lang pg_test_fsync-%{majorversion}
+cat pg_test_fsync-%{majorversion}.lang >>main.lst
+%find_lang pg_test_timing-%{majorversion}
+cat pg_test_timing-%{majorversion}.lang >>main.lst
+%find_lang pg_waldump-%{majorversion}
+cat pg_waldump-%{majorversion}.lang >>main.lst
 
 # devel
 %find_lang ecpg-%{majorversion}
@@ -495,41 +507,37 @@ exit 1
 %doc COPYRIGHT README HISTORY doc/bug.template
 %{_bindir}/clusterdb
 %{_bindir}/createdb
-%{_bindir}/createlang
 %{_bindir}/createuser
 %{_bindir}/dropdb
-%{_bindir}/droplang
 %{_bindir}/dropuser
 %{_bindir}/pg_basebackup
 %{_bindir}/pg_dump
 %{_bindir}/pg_dumpall
 %{_bindir}/pg_isready
-%{_bindir}/pg_receivexlog
+%{_bindir}/pg_receivewal
 %{_bindir}/pg_recvlogical
 %{_bindir}/pg_restore
 %{_bindir}/pg_test_fsync
 %{_bindir}/pg_test_timing
-%{_bindir}/pg_xlogdump
+%{_bindir}/pg_waldump
 %{_bindir}/psql
 %{_bindir}/reindexdb
 %{_bindir}/vacuumdb
 %{_mandir}/man1/clusterdb.*
 %{_mandir}/man1/createdb.*
-%{_mandir}/man1/createlang.*
 %{_mandir}/man1/createuser.*
 %{_mandir}/man1/dropdb.*
-%{_mandir}/man1/droplang.*
 %{_mandir}/man1/dropuser.*
 %{_mandir}/man1/pg_basebackup.*
 %{_mandir}/man1/pg_dump.*
 %{_mandir}/man1/pg_dumpall.*
 %{_mandir}/man1/pg_isready.1*
-%{_mandir}/man1/pg_receivexlog.1*
+%{_mandir}/man1/pg_receivewal.1*
 %{_mandir}/man1/pg_recvlogical.1*
 %{_mandir}/man1/pg_restore.*
 %{_mandir}/man1/pg_test_fsync.1*
 %{_mandir}/man1/pg_test_timing.1*
-%{_mandir}/man1/pg_xlogdump.1*
+%{_mandir}/man1/pg_waldump.1*
 %{_mandir}/man1/psql.*
 %{_mandir}/man1/reindexdb.*
 %{_mandir}/man1/vacuumdb.*
@@ -549,6 +557,7 @@ exit 1
 
 %files -n %{contrib}
 %{_libdir}/postgresql/_int.so
+%{_libdir}/postgresql/amcheck.so
 %{_libdir}/postgresql/bloom.so
 %{_libdir}/postgresql/btree_gist.so
 %{_libdir}/postgresql/chkpass.so
@@ -576,6 +585,7 @@ exit 1
 %{_libdir}/postgresql/pg_freespacemap.so
 %{_libdir}/postgresql/pg_prewarm.so
 %{_libdir}/postgresql/pg_visibility.so
+%{_libdir}/postgresql/pgoutput.so
 %{_libdir}/postgresql/pgrowlocks.so
 %{_libdir}/postgresql/sslinfo.so
 %{_libdir}/postgresql/pageinspect.so
@@ -595,7 +605,7 @@ exit 1
 %{_bindir}/initdb
 %{_bindir}/pg_controldata
 %{_bindir}/pg_ctl
-%{_bindir}/pg_resetxlog
+%{_bindir}/pg_resetwal
 %{_bindir}/postgres
 %{_bindir}/postmaster
 %{_bindir}/pg_rewind
@@ -606,7 +616,7 @@ exit 1
 %{_mandir}/man1/initdb.1*
 %{_mandir}/man1/pg_controldata.*
 %{_mandir}/man1/pg_ctl.1*
-%{_mandir}/man1/pg_resetxlog.*
+%{_mandir}/man1/pg_resetwal.*
 %{_mandir}/man1/pg_rewind.*
 %{_mandir}/man1/pg_upgrade.1*
 %{_mandir}/man1/postgres.1*
@@ -635,7 +645,6 @@ exit 1
 %{_libdir}/postgresql/test_decoding.so
 %{_libdir}/postgresql/tsm_system_rows.so
 %{_libdir}/postgresql/tsm_system_time.so
-%{_libdir}/postgresql/tsearch2.so
 %{_libdir}/postgresql/unaccent.so
 %if %{with uuid}
 %{_libdir}/postgresql/uuid-ossp.so
@@ -702,11 +711,6 @@ exit 1
 
 %files -n %{pltcl} -f pltcl.lst
 %{_libdir}/postgresql/pltcl.so
-%{_bindir}/pltcl_delmod
-%{_bindir}/pltcl_listmod
-%{_bindir}/pltcl_loadmod
-%{_datadir}/postgresql/unknown.pltcl
 
 %files -n %{plpgsql} -f plpgsql.lst
 %{_libdir}/postgresql/plpgsql.so
-
