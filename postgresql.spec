@@ -26,11 +26,11 @@
 
 Summary: 	PostgreSQL client programs and libraries
 Name:		postgresql
-Version: 	9.6.2
+Version: 	9.6.8
 Release: 	1
 License:	BSD
 Group:		Databases
-URL:		http://www.postgresql.org/ 
+URL:		http://www.postgresql.org/
 Source0:	ftp://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.bz2
 Source1:	ftp://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.bz2.md5
 Source10:	postgres.profile
@@ -182,10 +182,10 @@ need to install this package.
 Summary:	Procedurals languages for PostgreSQL
 Group:		Databases
 Provides:	%{name}-pl = %{version}-%{release}
-Requires:	%{name}-plpython >= %{version}-%{release} 
-Requires:	%{name}-plperl >= %{version}-%{release} 
-Requires:	%{name}-pltcl >= %{version}-%{release} 
-Requires:	%{name}-plpgsql >= %{version}-%{release} 
+Requires:	%{name}-plpython >= %{version}-%{release}
+Requires:	%{name}-plperl >= %{version}-%{release}
+Requires:	%{name}-pltcl >= %{version}-%{release}
+Requires:	%{name}-plpgsql >= %{version}-%{release}
 Obsoletes:	postgresql9.0-pl postgresql8.5-pl postgresql8.4-pl postgresql8.3-pl postgresql8.2-pl
 
 %description -n %{metapl}
@@ -207,7 +207,7 @@ the backend. PL/Python is part of the core server package.
 
 %package -n %{plperl}
 Summary:	The PL/Perl procedural language for PostgreSQL
-Group:		Databases	
+Group:		Databases
 Provides:	%{name}-plperl = %{version}-%{release}
 #Requires:	postgresql-server >= %{version}
 Obsoletes:	postgresql9.0-plperl postgresql8.5-plperl postgresql8.4-plperl postgresql8.3-plperl postgresql8.2-plperl
@@ -283,6 +283,7 @@ echo "#define HAVE_OSSP_UUID_H 1" >> src/include/pg_config.h
 # python_libspec incorrectly uses the static python lib causing failures due to lto
 # in any case we should use the shared one
 %make world python_libspec=`python --libs`
+%make -C contrib
 
 pushd src/test
 make all
@@ -320,7 +321,7 @@ install -d -m 755 %{buildroot}/var/run/postgresql
 mkdir -p %{buildroot}%{_tmpfilesdir}
 install -m 0644 %{SOURCE12} %{buildroot}%{_tmpfilesdir}/%{bname}.conf
 
-# install helper script for env initialisation 
+# install helper script for env initialisation
 mkdir -p %{buildroot}%{_prefix}/libexec
 install -m 755 %{SOURCE14} %{buildroot}%{_prefix}/libexec
 
