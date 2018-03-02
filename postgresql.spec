@@ -249,6 +249,12 @@ the backend. PL/PgSQL is part of the core server package.
 %build
 %setup_compile_flags
 
+%ifarch %{ix86}
+# float8 test fails on i586 with clang
+export CC=gcc
+export CXX=g++
+%endif
+
 %configure \
     --disable-rpath \
     --with-perl \
