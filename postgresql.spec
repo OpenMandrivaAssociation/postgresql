@@ -9,25 +9,25 @@
 
 %define majorversion %(echo %{version} | cut -d. -f1)
 %define minorversion %(echo %{version} | cut -d. -f3)
-%define bname		%{name}%{majorversion}
-%define server		%{name}-server
-%define contrib		%{name}-contrib
-%define metapl		%{name}-pl
-%define plpython	%{name}-plpython
-%define plperl		%{name}-plperl
-%define pltcl		%{name}-pltcl
-%define plpgsql		%{name}-plpgsql
+%define bname %{name}%{majorversion}
+%define server %{name}-server
+%define contrib %{name}-contrib
+%define metapl %{name}-pl
+%define plpython %{name}-plpython
+%define plperl %{name}-plperl
+%define pltcl %{name}-pltcl
+%define plpgsql %{name}-plpgsql
 
 %define pgdata /var/lib/pgsql
 %define pguser postgres
 %define logrotatedir %{_sysconfdir}/logrotate.d
 
-%bcond_without	uuid
+%bcond_without uuid
 
-Summary: 	PostgreSQL client programs and libraries
+Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
-Version: 	10.2
-Release: 	2
+Version:	10.2
+Release:	2
 License:	BSD
 Group:		Databases
 URL:		http://www.postgresql.org/ 
@@ -45,20 +45,22 @@ BuildRequires:	bison
 BuildRequires:	flex
 BuildRequires:	openssl-devel
 BuildRequires:	pam-devel
-BuildRequires:	perl-devel
+BuildRequires:	perl(ExtUtils::Embed)
 BuildRequires:	pkgconfig(python3)
 BuildRequires:	readline-devel
 BuildRequires:	tcl-devel
 BuildRequires:	libxml2-devel
 BuildRequires:	libxslt-devel
-BuildRequires:	zlib-devel
+BuildRequires:	pkgconfig(zlib)
+BuildRequires:	rpm-helper
+BuildRequires:	systemd
 %if %{with uuid}
-BuildRequires:  ossp-uuid-devel >= 1.6.2-5
+BuildRequires:	ossp-uuid-devel >= 1.6.2-5
 %endif
 # Need to build doc
-BuildRequires:  docbook-dtd31-sgml
-BuildRequires:  docbook-dtd41-sgml
-BuildRequires:  docbook-dtd42-sgml
+BuildRequires:	docbook-dtd31-sgml
+BuildRequires:	docbook-dtd41-sgml
+BuildRequires:	docbook-dtd42-sgml
 BuildRequires:	docbook-dtd44-xml
 BuildRequires:	openjade
 BuildRequires:	docbook-utils
@@ -86,7 +88,7 @@ If you want to manipulate a PostgreSQL database on a remote PostgreSQL server,
 you need this package. You also need to install this package if you're
 installing the postgresql-server package.
 
-%package -n	%{libname}
+%package -n %{libname}
 Summary:	The shared libraries required for any PostgreSQL clients
 Group:		System/Libraries
 Provides:	postgresql-libs = %{version}-%{release}
@@ -95,12 +97,12 @@ Provides:	postgresql-libs = %{version}-%{release}
 %rename	%{_lib}pq8.4_5
 %rename	%{_lib}pq8.3_5
 
-%description -n	%{libname}
+%description -n %{libname}
 C and C++ libraries to enable user programs to communicate with the PostgreSQL
 database backend. The backend can be on another machine and accessed through
 TCP/IP.
 
-%package -n	%{libecpg}
+%package -n %{libecpg}
 Summary:	Shared library libecpg for PostgreSQL
 Group:		System/Libraries
 %rename	%{_lib}ecpg9.0_6
@@ -109,7 +111,7 @@ Group:		System/Libraries
 %rename	%{_lib}ecpg8.3_6
 Conflicts:	%{mklibname ecpg 5}
 
-%description -n	%{libecpg}
+%description -n %{libecpg}
 Libecpg is used by programs built with ecpg (Embedded PostgreSQL for C) Use
 postgresql-dev to develop such programs.
 
@@ -119,11 +121,11 @@ Group:		Databases
 Provides:	sqlserver
 Provides:	postgresql-server = %{version}-%{release}
 # add/remove services
-Requires(post): rpm-helper
-Requires(preun): rpm-helper
+Requires(post):	rpm-helper
+Requires(preun):	rpm-helper
 # add/del user
-Requires(pre,postun): rpm-helper
-Requires(post,preun): update-alternatives
+Requires(pre,postun):	rpm-helper
+Requires(post,preun):	chkconfig
 # the client bins are needed for upgrading
 Requires:	postgresql >= %{version}-%{release}
 Requires:	postgresql-plpgsql >= %{version}-%{release}
@@ -141,12 +143,12 @@ install the postgresql and postgresql-devel packages.
 
 After installing this package, please read postgresql.omv.releasenote.
 
-%package	docs
+%package docs
 Summary:	Extra documentation for PostgreSQL
 Group:		Databases
 Obsoletes:	postgresql9.0-docs postgresql8.5-docs postgresql8.4-docs postgresql8.3-docs postgresql8.2-docs
 
-%description	docs
+%description docs
 The postgresql-docs package includes the SGML source for the documentation as
 well as the documentation in other formats, and some extra documentation.
 Install this package if you want to help with the PostgreSQL documentation
@@ -162,7 +164,7 @@ Obsoletes:	postgresql9.0-contrib postgresql8.5-contrib postgresql8.4-contrib pos
 The postgresql-contrib package includes the contrib tree distributed with the
 PostgreSQL tarball.  Selected contrib modules are prebuilt.
 
-%package	devel
+%package devel
 Summary:	PostgreSQL development header files and libraries
 Group:		Development/Databases
 Provides:	%{name}-devel = %{version}-%{release}
@@ -170,7 +172,7 @@ Requires:	%{libname} >= %{version}-%{release}
 Requires:	%{libecpg} >= %{version}-%{release}
 Obsoletes:	postgresql9.0-devel postgresql8.5-devel postgresql8.4-devel postgresql8.3-devel postgresql8.2-devel
 
-%description	devel
+%description devel
 The postgresql-devel package contains the header files and libraries needed to
 compile C or C++ applications which will directly interact with a PostgreSQL
 database management server and the ecpg Embedded C Postgres preprocessor. You
