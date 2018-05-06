@@ -556,6 +556,7 @@ exit 1
 
 %files docs
 %doc %{_docdir}/%{name}-docs-%{version}
+%{_docdir}/%{name}/extension
 
 %files -n %{contrib}
 %{_libdir}/postgresql/_int.so
