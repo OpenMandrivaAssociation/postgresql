@@ -54,6 +54,7 @@ BuildRequires:	libxslt-devel
 BuildRequires:	pkgconfig(zlib)
 BuildRequires:	rpm-helper
 BuildRequires:	systemd
+BuildRequires:	gettext-devel
 %if %{with uuid}
 BuildRequires:	ossp-uuid-devel >= 1.6.2-5
 %endif
