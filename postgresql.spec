@@ -8,7 +8,7 @@
 %define libecpg %mklibname ecpg %{major_ecpg}
 
 %define majorversion %(echo %{version} | cut -d. -f1)
-%define minorversion %(echo %{version} | cut -d. -f3)
+%define minorversion %(echo %{version} | cut -d. -f2)
 %define bname %{name}%{majorversion}
 %define server %{name}-server
 %define contrib %{name}-contrib
@@ -24,15 +24,18 @@
 
 %bcond_without uuid
 
+%define beta beta2
+%define fsversion %(echo %{version} |sed -e 's,\.0$,,')%{beta}
+
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
-Version:	10.4
+Version:	11.0
 Release:	1
 License:	BSD
 Group:		Databases
 URL:		http://www.postgresql.org/ 
-Source0:	http://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.bz2
-Source1:	http://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.bz2.md5
+Source0:	http://ftp.postgresql.org/pub/source/v%{fsversion}/postgresql-%{fsversion}.tar.bz2
+Source1:	http://ftp.postgresql.org/pub/source/v%{fsversion}/postgresql-%{fsversion}.tar.bz2.md5
 Source10:	postgres.profile
 Source11:	postgresql.service
 Source12:	postgresql.tmpfiles.d
@@ -245,14 +248,12 @@ postgresql-plpgsql package contains the the PL/PgSQL procedural languages for
 the backend. PL/PgSQL is part of the core server package.
 
 %prep
-
-%setup -q
-%apply_patches
+%autosetup -p1 -n postgresql-%{fsversion}
 
 %build
 %setup_compile_flags
 
-CC=gcc CXX=g++ \
+#CC=gcc CXX=g++
 %configure \
     --disable-rpath \
     --with-perl \
@@ -318,7 +319,7 @@ mkdir -p %{buildroot}%{_unitdir}
 install -m 644 %{SOURCE11} %{buildroot}%{_unitdir}/%{bname}.service
 
 # Create the directory for sockets.
-install -d -m 755 %{buildroot}/var/run/postgresql
+install -d -m 755 %{buildroot}/run/postgresql
 
 # ... and make a tmpfiles script to recreate it at reboot.
 mkdir -p %{buildroot}%{_tmpfilesdir}
@@ -522,10 +523,12 @@ exit 1
 %{_bindir}/pg_restore
 %{_bindir}/pg_test_fsync
 %{_bindir}/pg_test_timing
+%{_bindir}/pg_verify_checksums
 %{_bindir}/pg_waldump
 %{_bindir}/psql
 %{_bindir}/reindexdb
 %{_bindir}/vacuumdb
+%{_datadir}/postgresql
 %{_mandir}/man1/clusterdb.*
 %{_mandir}/man1/createdb.*
 %{_mandir}/man1/createuser.*
@@ -540,6 +543,7 @@ exit 1
 %{_mandir}/man1/pg_restore.*
 %{_mandir}/man1/pg_test_fsync.1*
 %{_mandir}/man1/pg_test_timing.1*
+%{_mandir}/man1/pg_verify_checksums.1*
 %{_mandir}/man1/pg_waldump.1*
 %{_mandir}/man1/psql.*
 %{_mandir}/man1/reindexdb.*
@@ -564,7 +568,6 @@ exit 1
 %{_libdir}/postgresql/amcheck.so
 %{_libdir}/postgresql/bloom.so
 %{_libdir}/postgresql/btree_gist.so
-%{_libdir}/postgresql/chkpass.so
 %{_libdir}/postgresql/cube.so
 %{_libdir}/postgresql/dblink.so
 %{_libdir}/postgresql/earthdistance.so
@@ -594,6 +597,8 @@ exit 1
 %{_libdir}/postgresql/sslinfo.so
 %{_libdir}/postgresql/pageinspect.so
 %{_libdir}/postgresql/postgres_fdw.so
+%{_libdir}/postgresql/jsonb_plperl.so
+%{_libdir}/postgresql/jsonb_plpython3.so
 %{_bindir}/oid2name
 %{_bindir}/pgbench
 %{_bindir}/vacuumlo

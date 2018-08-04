@@ -1,6 +1,7 @@
---- postgresql-9.5.2/src/backend/utils/misc/guc.c.0001~	2016-03-28 22:07:39.000000000 +0200
-+++ postgresql-9.5.2/src/backend/utils/misc/guc.c	2016-03-31 19:45:33.696049857 +0200
-@@ -3196,7 +3196,7 @@ static struct config_string ConfigureNam
+diff -up postgresql-11beta2/src/backend/utils/misc/guc.c.omv~ postgresql-11beta2/src/backend/utils/misc/guc.c
+--- postgresql-11beta2/src/backend/utils/misc/guc.c.omv~	2018-08-04 15:42:03.131340552 +0200
++++ postgresql-11beta2/src/backend/utils/misc/guc.c	2018-08-04 15:42:25.582487932 +0200
+@@ -3638,7 +3638,7 @@ static struct config_string ConfigureNam
  		},
  		&Unix_socket_directories,
  #ifdef HAVE_UNIX_SOCKETS
@@ -9,9 +10,10 @@
  #else
  		"",
  #endif
---- postgresql-9.5.2/src/bin/initdb/initdb.c.0001~	2016-03-28 22:07:39.000000000 +0200
-+++ postgresql-9.5.2/src/bin/initdb/initdb.c	2016-03-31 19:45:33.697049828 +0200
-@@ -1210,7 +1210,7 @@ setup_config(void)
+diff -up postgresql-11beta2/src/bin/initdb/initdb.c.omv~ postgresql-11beta2/src/bin/initdb/initdb.c
+--- postgresql-11beta2/src/bin/initdb/initdb.c.omv~	2018-08-04 15:42:31.616527592 +0200
++++ postgresql-11beta2/src/bin/initdb/initdb.c	2018-08-04 15:42:42.748600810 +0200
+@@ -1102,7 +1102,7 @@ setup_config(void)
  
  #ifdef HAVE_UNIX_SOCKETS
  	snprintf(repltok, sizeof(repltok), "#unix_socket_directories = '%s'",
@@ -20,9 +22,10 @@
  #else
  	snprintf(repltok, sizeof(repltok), "#unix_socket_directories = ''");
  #endif
---- postgresql-9.5.2/src/include/pg_config_manual.h.0001~	2016-03-31 19:45:33.697049828 +0200
-+++ postgresql-9.5.2/src/include/pg_config_manual.h	2016-04-01 00:25:00.056286534 +0200
-@@ -169,7 +169,7 @@
+diff -up postgresql-11beta2/src/include/pg_config_manual.h.omv~ postgresql-11beta2/src/include/pg_config_manual.h
+--- postgresql-11beta2/src/include/pg_config_manual.h.omv~	2018-08-04 15:42:49.064642382 +0200
++++ postgresql-11beta2/src/include/pg_config_manual.h	2018-08-04 15:43:00.443717332 +0200
+@@ -177,7 +177,7 @@
   * here's where to twiddle it.  You can also override this at runtime
   * with the postmaster's -k switch.
   */
