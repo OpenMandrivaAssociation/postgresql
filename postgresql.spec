@@ -253,7 +253,13 @@ the backend. PL/PgSQL is part of the core server package.
 %build
 %setup_compile_flags
 
-#CC=gcc CXX=g++
+%ifarch %{ix86}
+# As of postgresql 11.0-beta2 and clang 7.0-338892,
+# building with clang on i686 causes a test failure in
+# the float8 test.
+# Get rid of gcc use once that's fixed.
+CC=gcc CXX=g++ \
+%endif
 %configure \
     --disable-rpath \
     --with-perl \
