@@ -24,13 +24,13 @@
 
 %bcond_without uuid
 
-%define beta beta2
+%define beta %{nil}
 %define fsversion %(echo %{version} |sed -e 's,\.0$,,')%{beta}
 
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
-Version:	11.0
-Release:	2
+Version:	11.1
+Release:	1
 License:	BSD
 Group:		Databases
 URL:		http://www.postgresql.org/ 
@@ -404,6 +404,8 @@ cat pg_dump-%{majorversion}.lang >> main.lst
 cat pgscripts-%{majorversion}.lang >> main.lst
 %find_lang psql-%{majorversion}
 cat psql-%{majorversion}.lang >>main.lst
+%find_lang pg_verify_checksums-%{majorversion}
+cat pg_verify_checksums-%{majorversion}.lang >>main.lst
 
 %find_lang pg_resetwal-%{majorversion}
 cat pg_resetwal-%{majorversion}.lang >>main.lst
