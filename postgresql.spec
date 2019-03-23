@@ -67,6 +67,7 @@ BuildRequires:	docbook-dtd41-sgml
 BuildRequires:	docbook-dtd42-sgml
 BuildRequires:	docbook-dtd44-xml
 BuildRequires:	openjade
+BuildRequires:	perl-devel
 BuildRequires:	docbook-utils
 BuildRequires:	xsltproc
 BuildRequires:	docbook-style-xsl
