@@ -271,6 +271,9 @@ CC=gcc CXX=g++ \
     --with-openssl \
     --with-pam \
     --with-libxml \
+%ifarch riscv64
+    --disable-spinlocks \
+%endif
     --with-libxslt \
     --libdir=%{_libdir} \
     --mandir=%{_mandir} \
