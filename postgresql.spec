@@ -29,7 +29,7 @@
 
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
-Version:	11.3
+Version:	11.4
 Release:	1
 License:	BSD
 Group:		Databases
