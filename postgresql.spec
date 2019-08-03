@@ -3,9 +3,11 @@
 %define _disable_lto 1
 
 %define major 5
-%define major_ecpg 6
+%define oldmajor_ecpg 7
+%define major_ecpg 7
 %define libname %mklibname pq %{major}
 %define libecpg %mklibname ecpg %{major_ecpg}
+%define oldlibecpg %mklibname ecpg %{oldmajor_ecpg}
 
 %define majorversion %(echo %{version} | cut -d. -f1)
 %define minorversion %(echo %{version} | cut -d. -f2)
@@ -24,12 +26,12 @@
 
 %bcond_without uuid
 
-%define beta %{nil}
+%define beta beta2
 %define fsversion %(echo %{version} |sed -e 's,\.0$,,')%{beta}
 
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
-Version:	11.4
+Version:	12
 Release:	1
 License:	BSD
 Group:		Databases
@@ -115,6 +117,7 @@ Group:		System/Libraries
 %rename	%{_lib}ecpg8.5_6
 %rename	%{_lib}ecpg8.4_6
 %rename	%{_lib}ecpg8.3_6
+%rename %{oldlibecpg}
 Conflicts:	%{mklibname ecpg 5}
 
 %description -n %{libecpg}
@@ -409,8 +412,8 @@ cat pg_dump-%{majorversion}.lang >> main.lst
 cat pgscripts-%{majorversion}.lang >> main.lst
 %find_lang psql-%{majorversion}
 cat psql-%{majorversion}.lang >>main.lst
-%find_lang pg_verify_checksums-%{majorversion}
-cat pg_verify_checksums-%{majorversion}.lang >>main.lst
+%find_lang pg_checksums-%{majorversion}
+cat pg_checksums-%{majorversion}.lang >>main.lst
 
 %find_lang pg_resetwal-%{majorversion}
 cat pg_resetwal-%{majorversion}.lang >>main.lst
@@ -521,13 +524,14 @@ exit 1
 
 %files -f main.lst
 %doc doc/KNOWN_BUGS doc/MISSING_FEATURES
-%doc COPYRIGHT README HISTORY doc/bug.template
+%doc COPYRIGHT README HISTORY
 %{_bindir}/clusterdb
 %{_bindir}/createdb
 %{_bindir}/createuser
 %{_bindir}/dropdb
 %{_bindir}/dropuser
 %{_bindir}/pg_basebackup
+%{_bindir}/pg_checksums
 %{_bindir}/pg_dump
 %{_bindir}/pg_dumpall
 %{_bindir}/pg_isready
@@ -536,7 +540,6 @@ exit 1
 %{_bindir}/pg_restore
 %{_bindir}/pg_test_fsync
 %{_bindir}/pg_test_timing
-%{_bindir}/pg_verify_checksums
 %{_bindir}/pg_waldump
 %{_bindir}/psql
 %{_bindir}/reindexdb
@@ -548,6 +551,7 @@ exit 1
 %{_mandir}/man1/dropdb.*
 %{_mandir}/man1/dropuser.*
 %{_mandir}/man1/pg_basebackup.*
+%{_mandir}/man1/pg_checksums.1*
 %{_mandir}/man1/pg_dump.*
 %{_mandir}/man1/pg_dumpall.*
 %{_mandir}/man1/pg_isready.1*
@@ -556,7 +560,6 @@ exit 1
 %{_mandir}/man1/pg_restore.*
 %{_mandir}/man1/pg_test_fsync.1*
 %{_mandir}/man1/pg_test_timing.1*
-%{_mandir}/man1/pg_verify_checksums.1*
 %{_mandir}/man1/pg_waldump.1*
 %{_mandir}/man1/psql.*
 %{_mandir}/man1/reindexdb.*
@@ -595,7 +598,6 @@ exit 1
 %{_libdir}/postgresql/seg.so
 %{_libdir}/postgresql/tablefunc.so
 %{_libdir}/postgresql/tcn.so
-%{_libdir}/postgresql/timetravel.so
 %{_libdir}/postgresql/pg_trgm.so
 %{_libdir}/postgresql/autoinc.so
 %{_libdir}/postgresql/pg_buffercache.so
@@ -676,7 +678,6 @@ exit 1
 %{_datadir}/postgresql/*.sample
 %{_datadir}/postgresql/timezone
 %{_datadir}/postgresql/system_views.sql
-%{_datadir}/postgresql/conversion_create.sql
 %{_datadir}/postgresql/information_schema.sql
 %{_datadir}/postgresql/snowball_create.sql
 %{_datadir}/postgresql/sql_features.txt
