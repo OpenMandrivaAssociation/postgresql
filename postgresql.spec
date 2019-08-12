@@ -26,13 +26,17 @@
 
 %bcond_without uuid
 
-%define beta beta2
+%define beta beta3
 %define fsversion %(echo %{version} |sed -e 's,\.0$,,')%{beta}
 
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
-Version:	12
+Version:	12.0
+%if "%{beta}" != ""
+Release:	0.%{beta}.1
+%else
 Release:	1
+%endif
 License:	BSD
 Group:		Databases
 URL:		http://www.postgresql.org/ 
