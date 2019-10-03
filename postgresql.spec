@@ -4,7 +4,7 @@
 
 %define major 5
 %define oldmajor_ecpg 7
-%define major_ecpg 7
+%define major_ecpg 6
 %define libname %mklibname pq %{major}
 %define libecpg %mklibname ecpg %{major_ecpg}
 %define oldlibecpg %mklibname ecpg %{oldmajor_ecpg}
@@ -26,8 +26,9 @@
 
 %bcond_without uuid
 
-%define beta beta3
-%define fsversion %(echo %{version} |sed -e 's,\.0$,,')%{beta}
+%define beta %{nil}
+%define fsversion %{version}
+# For versions tagged x.y.0: %(echo %{version} |sed -e 's,\.0$,,')%{beta}
 
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
