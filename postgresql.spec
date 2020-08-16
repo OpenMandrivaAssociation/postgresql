@@ -32,7 +32,7 @@
 
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
-Version:	12.3
+Version:	12.4
 %if "%{beta}" != ""
 Release:	0.%{beta}.1
 %else
@@ -52,7 +52,7 @@ Source100:	%name.rpmlintrc
 Patch1:		postgresql-run-socket.patch
 BuildRequires:	bison
 BuildRequires:	flex
-BuildRequires:	openssl-devel
+BuildRequires:	pkgconfig(openssl)
 BuildRequires:	pam-devel
 BuildRequires:	perl(ExtUtils::Embed)
 BuildRequires:	pkgconfig(python3)
