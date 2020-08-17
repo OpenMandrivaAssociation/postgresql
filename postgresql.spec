@@ -58,8 +58,8 @@ BuildRequires:	perl(ExtUtils::Embed)
 BuildRequires:	pkgconfig(python3)
 BuildRequires:	readline-devel
 BuildRequires:	tcl-devel
-BuildRequires:	libxml2-devel
-BuildRequires:	libxslt-devel
+BuildRequires:	pkgconfig(libxml-2.0)
+BuildRequires:	pkgconfig(libxslt)
 BuildRequires:	pkgconfig(zlib)
 BuildRequires:	rpm-helper
 BuildRequires:	systemd
