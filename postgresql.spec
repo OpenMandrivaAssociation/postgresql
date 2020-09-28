@@ -32,7 +32,7 @@
 
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
-Version:	12.4
+Version:	13.0
 %if "%{beta}" != ""
 Release:	0.%{beta}.1
 %else
@@ -427,6 +427,8 @@ cat pg_test_fsync-%{majorversion}.lang >>main.lst
 cat pg_test_timing-%{majorversion}.lang >>main.lst
 %find_lang pg_waldump-%{majorversion}
 cat pg_waldump-%{majorversion}.lang >>main.lst
+%find_lang pg_verifybackup-%{majorversion}
+cat pg_verifybackup-%{majorversion}.lang >>main.lst
 
 # devel
 %find_lang ecpg-%{majorversion}
@@ -544,6 +546,7 @@ exit 1
 %{_bindir}/pg_restore
 %{_bindir}/pg_test_fsync
 %{_bindir}/pg_test_timing
+%{_bindir}/pg_verifybackup
 %{_bindir}/pg_waldump
 %{_bindir}/psql
 %{_bindir}/reindexdb
@@ -565,6 +568,7 @@ exit 1
 %{_mandir}/man1/pg_test_fsync.1*
 %{_mandir}/man1/pg_test_timing.1*
 %{_mandir}/man1/pg_waldump.1*
+%{_mandir}/man1/pg_verifybackup.1*
 %{_mandir}/man1/psql.*
 %{_mandir}/man1/reindexdb.*
 %{_mandir}/man1/vacuumdb.*
@@ -651,8 +655,8 @@ exit 1
 %{_mandir}/man1/postmaster.1*
 %dir %{_libdir}/postgresql
 %dir %{_datadir}/postgresql
-%attr(644,%{pguser},%{pguser}) %config(noreplace) %{pgdata}/.bashrc
-%attr(-,%{pguser},%{pguser}) %{pgdata}/.profile
+%config(noreplace) %attr(-,%{pguser},%{pguser}) %{pgdata}/.profile
+%config(noreplace) %{pgdata}/.bashrc
 %attr(700,%{pguser},%{pguser}) %dir %{pgdata}
 %attr(-,%{pguser},%{pguser}) %{pgdata}/data
 %attr(700,%{pguser},%{pguser}) %dir %{pgdata}/backups
@@ -678,14 +682,12 @@ exit 1
 %{_libdir}/postgresql/uuid-ossp.so
 %endif
 %{_datadir}/postgresql/postgres.bki
-%{_datadir}/postgresql/postgres.description
 %{_datadir}/postgresql/*.sample
 %{_datadir}/postgresql/timezone
 %{_datadir}/postgresql/system_views.sql
 %{_datadir}/postgresql/information_schema.sql
 %{_datadir}/postgresql/snowball_create.sql
 %{_datadir}/postgresql/sql_features.txt
-%{_datadir}/postgresql/postgres.shdescription
 %dir %{_datadir}/postgresql/timezonesets
 %{_datadir}/postgresql/timezonesets/Africa.txt
 %{_datadir}/postgresql/timezonesets/America.txt
@@ -735,6 +737,7 @@ exit 1
 %files -n %{plperl} -f plperl.lst
 %{_libdir}/postgresql/hstore_plperl.so
 %{_libdir}/postgresql/plperl.so
+%{_libdir}/postgresql/bool_plperl.so
 
 %files -n %{pltcl} -f pltcl.lst
 %{_libdir}/postgresql/pltcl.so

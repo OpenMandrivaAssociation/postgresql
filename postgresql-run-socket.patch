@@ -1,7 +1,7 @@
-diff -up postgresql-11beta2/src/backend/utils/misc/guc.c.omv~ postgresql-11beta2/src/backend/utils/misc/guc.c
---- postgresql-11beta2/src/backend/utils/misc/guc.c.omv~	2018-08-04 15:42:03.131340552 +0200
-+++ postgresql-11beta2/src/backend/utils/misc/guc.c	2018-08-04 15:42:25.582487932 +0200
-@@ -3638,7 +3638,7 @@ static struct config_string ConfigureNam
+diff -up postgresql-13.0/src/backend/utils/misc/guc.c.1~ postgresql-13.0/src/backend/utils/misc/guc.c
+--- postgresql-13.0/src/backend/utils/misc/guc.c.1~	2020-09-21 22:47:36.000000000 +0200
++++ postgresql-13.0/src/backend/utils/misc/guc.c	2020-09-28 21:05:17.051987087 +0200
+@@ -4159,7 +4159,7 @@ static struct config_string ConfigureNam
  		},
  		&Unix_socket_directories,
  #ifdef HAVE_UNIX_SOCKETS
@@ -10,10 +10,10 @@ diff -up postgresql-11beta2/src/backend/utils/misc/guc.c.omv~ postgresql-11beta2
  #else
  		"",
  #endif
-diff -up postgresql-11beta2/src/bin/initdb/initdb.c.omv~ postgresql-11beta2/src/bin/initdb/initdb.c
---- postgresql-11beta2/src/bin/initdb/initdb.c.omv~	2018-08-04 15:42:31.616527592 +0200
-+++ postgresql-11beta2/src/bin/initdb/initdb.c	2018-08-04 15:42:42.748600810 +0200
-@@ -1102,7 +1102,7 @@ setup_config(void)
+diff -up postgresql-13.0/src/bin/initdb/initdb.c.1~ postgresql-13.0/src/bin/initdb/initdb.c
+--- postgresql-13.0/src/bin/initdb/initdb.c.1~	2020-09-21 22:47:36.000000000 +0200
++++ postgresql-13.0/src/bin/initdb/initdb.c	2020-09-28 21:05:17.051987087 +0200
+@@ -1091,7 +1091,7 @@ setup_config(void)
  
  #ifdef HAVE_UNIX_SOCKETS
  	snprintf(repltok, sizeof(repltok), "#unix_socket_directories = '%s'",
@@ -22,15 +22,15 @@ diff -up postgresql-11beta2/src/bin/initdb/initdb.c.omv~ postgresql-11beta2/src/
  #else
  	snprintf(repltok, sizeof(repltok), "#unix_socket_directories = ''");
  #endif
-diff -up postgresql-11beta2/src/include/pg_config_manual.h.omv~ postgresql-11beta2/src/include/pg_config_manual.h
---- postgresql-11beta2/src/include/pg_config_manual.h.omv~	2018-08-04 15:42:49.064642382 +0200
-+++ postgresql-11beta2/src/include/pg_config_manual.h	2018-08-04 15:43:00.443717332 +0200
-@@ -177,7 +177,7 @@
-  * here's where to twiddle it.  You can also override this at runtime
-  * with the postmaster's -k switch.
+diff -up postgresql-13.0/src/include/pg_config_manual.h.1~ postgresql-13.0/src/include/pg_config_manual.h
+--- postgresql-13.0/src/include/pg_config_manual.h.1~	2020-09-28 21:05:17.051987087 +0200
++++ postgresql-13.0/src/include/pg_config_manual.h	2020-09-28 21:08:44.796005453 +0200
+@@ -201,7 +201,7 @@
+  * support them yet.
   */
+ #ifndef WIN32
 -#define DEFAULT_PGSOCKET_DIR  "/tmp"
 +#define DEFAULT_PGSOCKET_DIR  "/run/postgresql"
- 
- /*
-  * This is the default event source for Windows event log.
+ #else
+ #define DEFAULT_PGSOCKET_DIR ""
+ #endif
