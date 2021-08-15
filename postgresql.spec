@@ -32,7 +32,7 @@
 
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
-Version:	13.2
+Version:	13.4
 %if "%{beta}" != ""
 Release:	1
 %else
