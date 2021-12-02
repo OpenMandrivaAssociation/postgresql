@@ -32,7 +32,7 @@
 
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
-Version:	13.4
+Version:	14.1
 %if "%{beta}" != ""
 Release:	1
 %else
@@ -430,6 +430,10 @@ cat pg_waldump-%{majorversion}.lang >>main.lst
 %find_lang pg_verifybackup-%{majorversion}
 cat pg_verifybackup-%{majorversion}.lang >>main.lst
 
+# contrib
+%find_lang pg_amcheck-%{majorversion}
+cat pg_amcheck-%{majorversion}.lang >>contrib.lst
+
 # devel
 %find_lang ecpg-%{majorversion}
 cat ecpg-%{majorversion}.lang >> devel.lst
@@ -587,7 +591,9 @@ exit 1
 %doc %{_docdir}/%{name}-docs-%{version}
 %{_docdir}/%{name}/extension
 
-%files -n %{contrib}
+%files -n %{contrib} -f contrib.lst
+%{_libdir}/postgresql/old_snapshot.so
+%{_libdir}/postgresql/pg_surgery.so
 %{_libdir}/postgresql/_int.so
 %{_libdir}/postgresql/amcheck.so
 %{_libdir}/postgresql/bloom.so
@@ -622,10 +628,12 @@ exit 1
 %{_libdir}/postgresql/postgres_fdw.so
 %{_libdir}/postgresql/jsonb_plperl.so
 %{_libdir}/postgresql/jsonb_plpython3.so
+%{_bindir}/pg_amcheck
 %{_bindir}/oid2name
 %{_bindir}/pgbench
 %{_bindir}/vacuumlo
 %{_mandir}/man1/oid2name.1*
+%{_mandir}/man1/pg_amcheck.1*
 %{_mandir}/man1/pgbench.1*
 %{_mandir}/man1/vacuumlo.1*
 
@@ -641,7 +649,6 @@ exit 1
 %{_bindir}/postgres
 %{_bindir}/postmaster
 %{_bindir}/pg_rewind
-%{_bindir}/pg_standby
 %{_bindir}/pg_archivecleanup
 %{_bindir}/pg_upgrade
 %{_prefix}/libexec/postgresql_initdb.sh
@@ -708,7 +715,6 @@ exit 1
 %attr(700,postgres,postgres) %dir /var/log/postgres
 %logrotatedir/%{name}
 %{_mandir}/man1/pg_archivecleanup.1*
-%{_mandir}/man1/pg_standby.1*
 
 %files devel -f devel.lst
 # %doc doc/TODO doc/TODO.detail
