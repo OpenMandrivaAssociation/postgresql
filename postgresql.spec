@@ -26,13 +26,13 @@
 
 %bcond_without uuid
 
-%define beta %{nil}
-%define fsversion %{version}
+%define beta beta1
+%define fsversion %{version}%{?beta:%{beta}}
 # For versions tagged x.y.0: %(echo %{version} |sed -e 's,\.0$,,')%{beta}
 
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
-Version:	14.1
+Version:	15
 %if "%{beta}" != ""
 Release:	1
 %else
@@ -540,7 +540,6 @@ exit 1
 %{_bindir}/createuser
 %{_bindir}/dropdb
 %{_bindir}/dropuser
-%{_bindir}/pg_basebackup
 %{_bindir}/pg_checksums
 %{_bindir}/pg_dump
 %{_bindir}/pg_dumpall
@@ -561,7 +560,6 @@ exit 1
 %{_mandir}/man1/createuser.*
 %{_mandir}/man1/dropdb.*
 %{_mandir}/man1/dropuser.*
-%{_mandir}/man1/pg_basebackup.*
 %{_mandir}/man1/pg_checksums.1*
 %{_mandir}/man1/pg_dump.*
 %{_mandir}/man1/pg_dumpall.*
@@ -628,6 +626,12 @@ exit 1
 %{_libdir}/postgresql/postgres_fdw.so
 %{_libdir}/postgresql/jsonb_plperl.so
 %{_libdir}/postgresql/jsonb_plpython3.so
+# Mostly sample code
+# https://docs.postgresql.fr/15/basic-archive.html
+%{_libdir}/postgresql/basic_archive.so
+# Get WAL dumps, mostly for debugging
+# https://www.postgresql.org/message-id/CALj2ACUGUYXsEQdKhEdsBzhGEyF3xggvLdD8C0VT72TNEfOiog@mail.gmail.com
+%{_libdir}/postgresql/pg_walinspect.so
 %{_bindir}/pg_amcheck
 %{_bindir}/oid2name
 %{_bindir}/pgbench
@@ -715,6 +719,11 @@ exit 1
 %attr(700,postgres,postgres) %dir /var/log/postgres
 %logrotatedir/%{name}
 %{_mandir}/man1/pg_archivecleanup.1*
+# basebackup -- https://www.postgresql.org/docs/current/app-pgbasebackup.html
+# Keep in main, or subpackage?
+%{_bindir}/pg_basebackup
+%{_mandir}/man1/pg_basebackup.*
+%{_libdir}/postgresql/basebackup_to_shell.so
 
 %files devel -f devel.lst
 # %doc doc/TODO doc/TODO.detail
