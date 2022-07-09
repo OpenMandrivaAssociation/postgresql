@@ -26,7 +26,7 @@
 
 %bcond_without uuid
 
-%define beta beta1
+%define beta beta2
 %define fsversion %{version}%{?beta:%{beta}}
 # For versions tagged x.y.0: %(echo %{version} |sed -e 's,\.0$,,')%{beta}
 
