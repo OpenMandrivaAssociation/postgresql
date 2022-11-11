@@ -32,7 +32,7 @@
 
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
-Version:	15.0
+Version:	15.1
 Release:	%{?beta:0.%{beta}.}1
 License:	BSD
 Group:		Databases
