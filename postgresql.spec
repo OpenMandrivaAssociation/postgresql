@@ -26,13 +26,13 @@
 
 %bcond_without uuid
 
-#define beta beta2
+%define beta rc1
 %define fsversion %{version}%{?beta:%{beta}}
 # For versions tagged x.y.0: %(echo %{version} |sed -e 's,\.0$,,')%{beta}
 
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
-Version:	15.4
+Version:	16
 Release:	%{?beta:0.%{beta}.}1
 License:	BSD
 Group:		Databases
@@ -647,7 +647,6 @@ exit 1
 %{_bindir}/pg_ctl
 %{_bindir}/pg_resetwal
 %{_bindir}/postgres
-%{_bindir}/postmaster
 %{_bindir}/pg_rewind
 %{_bindir}/pg_archivecleanup
 %{_bindir}/pg_upgrade
@@ -659,7 +658,6 @@ exit 1
 %{_mandir}/man1/pg_rewind.*
 %{_mandir}/man1/pg_upgrade.1*
 %{_mandir}/man1/postgres.1*
-%{_mandir}/man1/postmaster.1*
 %dir %{_libdir}/postgresql
 %dir %{_datadir}/postgresql
 %config(noreplace) %attr(-,%{pguser},%{pguser}) %{pgdata}/.profile

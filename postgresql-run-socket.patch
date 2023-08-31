@@ -1,31 +1,9 @@
-diff -up postgresql-13.0/src/backend/utils/misc/guc.c.1~ postgresql-13.0/src/backend/utils/misc/guc.c
---- postgresql-13.0/src/backend/utils/misc/guc.c.1~	2020-09-21 22:47:36.000000000 +0200
-+++ postgresql-13.0/src/backend/utils/misc/guc.c	2020-09-28 21:05:17.051987087 +0200
-@@ -4159,7 +4159,7 @@ static struct config_string ConfigureNam
- 		},
- 		&Unix_socket_directories,
- #ifdef HAVE_UNIX_SOCKETS
--		DEFAULT_PGSOCKET_DIR,
-+		DEFAULT_PGSOCKET_DIR ", /tmp",
- #else
- 		"",
- #endif
-diff -up postgresql-13.0/src/bin/initdb/initdb.c.1~ postgresql-13.0/src/bin/initdb/initdb.c
---- postgresql-13.0/src/bin/initdb/initdb.c.1~	2020-09-21 22:47:36.000000000 +0200
-+++ postgresql-13.0/src/bin/initdb/initdb.c	2020-09-28 21:05:17.051987087 +0200
-@@ -1091,7 +1091,7 @@ setup_config(void)
- 
- #ifdef HAVE_UNIX_SOCKETS
- 	snprintf(repltok, sizeof(repltok), "#unix_socket_directories = '%s'",
--			 DEFAULT_PGSOCKET_DIR);
-+			 DEFAULT_PGSOCKET_DIR ", /tmp");
- #else
- 	snprintf(repltok, sizeof(repltok), "#unix_socket_directories = ''");
- #endif
-diff -up postgresql-13.0/src/include/pg_config_manual.h.1~ postgresql-13.0/src/include/pg_config_manual.h
---- postgresql-13.0/src/include/pg_config_manual.h.1~	2020-09-28 21:05:17.051987087 +0200
-+++ postgresql-13.0/src/include/pg_config_manual.h	2020-09-28 21:08:44.796005453 +0200
-@@ -201,7 +201,7 @@
+diff -up postgresql-16rc1/src/backend/utils/misc/guc.c.1~ postgresql-16rc1/src/backend/utils/misc/guc.c
+diff -up postgresql-16rc1/src/bin/initdb/initdb.c.1~ postgresql-16rc1/src/bin/initdb/initdb.c
+diff -up postgresql-16rc1/src/include/pg_config_manual.h.1~ postgresql-16rc1/src/include/pg_config_manual.h
+--- postgresql-16rc1/src/include/pg_config_manual.h.1~	2023-08-28 22:26:56.000000000 +0200
++++ postgresql-16rc1/src/include/pg_config_manual.h	2023-08-31 22:56:10.826151129 +0200
+@@ -206,7 +206,7 @@
   * support them yet.
   */
  #ifndef WIN32
