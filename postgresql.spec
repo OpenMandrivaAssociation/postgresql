@@ -26,13 +26,13 @@
 
 %bcond_without uuid
 
-%define beta rc1
+#define beta rc1
 %define fsversion %{version}%{?beta:%{beta}}
 # For versions tagged x.y.0: %(echo %{version} |sed -e 's,\.0$,,')%{beta}
 
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
-Version:	16
+Version:	16.0
 Release:	%{?beta:0.%{beta}.}1
 License:	BSD
 Group:		Databases
