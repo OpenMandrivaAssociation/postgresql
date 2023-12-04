@@ -339,6 +339,11 @@ install -m 0644 %{SOURCE12} %{buildroot}%{_tmpfilesdir}/%{bname}.conf
 mkdir -p %{buildroot}%{_prefix}/libexec
 install -m 755 %{SOURCE14} %{buildroot}%{_prefix}/libexec
 
+# Create the user and group
+mkdir -p %{buildroot}%{_sysusersdir}
+cat >%{buildroot}%{_sysusersdir}/postgresql.conf <<EOF
+u %{pguser} 105 "PostgreSQL" %{pgdata} %{_bindir}/sh
+EOF
 
 %if 0
 # tests. There are many files included here that are unnecessary, but include
@@ -497,7 +502,6 @@ find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
 find %{buildroot} -type f -name "*.a" -exec rm -f {} ';'
 
 %pre -n %{server}
-%_pre_useradd %{pguser} %{pgdata} /bin/bash
 # if upgrade
 
 [ ! -f %{pgdata}/data/PG_VERSION ] && exit 0
@@ -520,9 +524,6 @@ exit 1
 
 %preun -n %{server}
 %_preun_service %{bname}
-
-%postun -n %{server}
-%_postun_userdel %{pguser}
 
 %files -f main.lst
 %doc doc/KNOWN_BUGS doc/MISSING_FEATURES
@@ -634,6 +635,7 @@ exit 1
 %{_mandir}/man1/vacuumlo.1*
 
 %files -n %{server} -f server.lst
+%{_sysusersdir}/postgresql.conf
 %{_unitdir}/%{bname}.service
 %{_tmpfilesdir}/%{bname}.conf
 %config(noreplace) %{_sysconfdir}/sysconfig/postgresql
