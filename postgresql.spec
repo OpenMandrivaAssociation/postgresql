@@ -5,9 +5,11 @@
 %define major 5
 %define oldmajor_ecpg 7
 %define major_ecpg 6
-%define libname %mklibname pq %{major}
-%define libecpg %mklibname ecpg %{major_ecpg}
-%define oldlibecpg %mklibname ecpg %{oldmajor_ecpg}
+%define oldlibname %mklibname pq 5
+%define libname %mklibname pq
+%define libecpg %mklibname ecpg
+%define veryoldlibecpg %mklibname ecpg 7
+%define oldlibecpg %mklibname ecpg 6
 
 %define majorversion %(echo %{version} | cut -d. -f1)
 %define minorversion %(echo %{version} | cut -d. -f2)
@@ -64,6 +66,7 @@ BuildRequires:	gettext-devel
 BuildRequires:	ossp-uuid-devel >= 1.6.2-5
 %endif
 # Need to build doc
+BuildRequires:	locales-extra-charsets
 BuildRequires:	docbook-dtd31-sgml
 BuildRequires:	docbook-dtd41-sgml
 BuildRequires:	docbook-dtd42-sgml
@@ -100,10 +103,7 @@ installing the postgresql-server package.
 Summary:	The shared libraries required for any PostgreSQL clients
 Group:		System/Libraries
 Provides:	postgresql-libs = %{version}-%{release}
-%rename	%{_lib}pq9.0_5
-%rename	%{_lib}pq8.5_5
-%rename	%{_lib}pq8.4_5
-%rename	%{_lib}pq8.3_5
+%rename	%{oldlibname}
 
 %description -n %{libname}
 C and C++ libraries to enable user programs to communicate with the PostgreSQL
@@ -113,11 +113,8 @@ TCP/IP.
 %package -n %{libecpg}
 Summary:	Shared library libecpg for PostgreSQL
 Group:		System/Libraries
-%rename	%{_lib}ecpg9.0_6
-%rename	%{_lib}ecpg8.5_6
-%rename	%{_lib}ecpg8.4_6
-%rename	%{_lib}ecpg8.3_6
 %rename %{oldlibecpg}
+%rename %{veryoldlibecpg}
 Conflicts:	%{mklibname ecpg 5}
 
 %description -n %{libecpg}
@@ -138,7 +135,6 @@ Requires(post,preun):	chkconfig
 # the client bins are needed for upgrading
 Requires:	postgresql >= %{version}-%{release}
 Requires:	postgresql-plpgsql >= %{version}-%{release}
-Obsoletes:	postgresql9.0-server postgresql8.5-server postgresql8.4-server postgresql8.3-server postgresql8.2-server
 
 %description -n %{server}
 The postgresql-server package includes the programs needed to create and run a
