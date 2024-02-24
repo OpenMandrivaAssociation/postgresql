@@ -34,7 +34,7 @@
 
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
-Version:	16.1
+Version:	16.2
 Release:	%{?beta:0.%{beta}.}1
 License:	BSD
 Group:		Databases
