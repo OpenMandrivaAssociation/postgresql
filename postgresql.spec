@@ -46,6 +46,7 @@ Source14:	postgresql_initdb.sh
 
 Source100:	%name.rpmlintrc
 Patch1:		postgresql-run-socket.patch
+Patch2:		postgresql-15.4-libxml.patch
 BuildRequires:	bison
 BuildRequires:	flex
 BuildRequires:	pkgconfig(openssl)
