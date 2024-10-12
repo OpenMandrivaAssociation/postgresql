@@ -13,7 +13,6 @@
 
 %define majorversion %(echo %{version} | cut -d. -f1)
 %define minorversion %(echo %{version} | cut -d. -f2)
-%define bname %{name}%{majorversion}
 %define server %{name}-server
 %define contrib %{name}-contrib
 %define metapl %{name}-pl
@@ -34,7 +33,7 @@
 
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
-Version:	16.4
+Version:	17.0
 Release:	%{?beta:0.%{beta}.}1
 License:	BSD
 Group:		Databases
@@ -43,7 +42,6 @@ Source0:	http://ftp.postgresql.org/pub/source/v%{fsversion}/postgresql-%{fsversi
 Source10:	postgres.profile
 Source11:	postgresql.service
 Source12:	postgresql.tmpfiles.d
-Source13:	postgresql.omv.releasenote
 Source14:	postgresql_initdb.sh
 
 Source100:	%name.rpmlintrc
@@ -80,7 +78,6 @@ BuildRequires:	docbook-style-xsl
 
 Provides:	postgresql-clients = %{version}-%{release}
 #Requires:	perl
-Obsoletes:	postgresql9.0 postgresql8.5 postgresql8.4 postgresql8.3 postgresql8.2
 
 %description
 PostgreSQL is an advanced Object-Relational database management system (DBMS)
@@ -146,12 +143,9 @@ install postgresql-server if you want to create and maintain your own
 PostgreSQL databases and/or your own PostgreSQL server. You also need to
 install the postgresql and postgresql-devel packages.
 
-After installing this package, please read postgresql.omv.releasenote.
-
 %package docs
 Summary:	Extra documentation for PostgreSQL
 Group:		Databases
-Obsoletes:	postgresql9.0-docs postgresql8.5-docs postgresql8.4-docs postgresql8.3-docs postgresql8.2-docs
 
 %description docs
 The postgresql-docs package includes the SGML source for the documentation as
@@ -163,7 +157,6 @@ project, or if you want to generate printed documentation.
 Summary:	Contributed binaries distributed with PostgreSQL
 Group:		Databases
 #Requires:	postgresql-server >= %{version}-%{release}
-Obsoletes:	postgresql9.0-contrib postgresql8.5-contrib postgresql8.4-contrib postgresql8.3-contrib postgresql8.2-contrib
 
 %description -n %{contrib}
 The postgresql-contrib package includes the contrib tree distributed with the
@@ -175,7 +168,6 @@ Group:		Development/Databases
 Provides:	%{name}-devel = %{version}-%{release}
 Requires:	%{libname} >= %{version}-%{release}
 Requires:	%{libecpg} >= %{version}-%{release}
-Obsoletes:	postgresql9.0-devel postgresql8.5-devel postgresql8.4-devel postgresql8.3-devel postgresql8.2-devel
 
 %description devel
 The postgresql-devel package contains the header files and libraries needed to
@@ -193,7 +185,6 @@ Requires:	%{name}-plpython >= %{version}-%{release}
 Requires:	%{name}-plperl >= %{version}-%{release} 
 Requires:	%{name}-pltcl >= %{version}-%{release} 
 Requires:	%{name}-plpgsql >= %{version}-%{release} 
-Obsoletes:	postgresql9.0-pl postgresql8.5-pl postgresql8.4-pl postgresql8.3-pl postgresql8.2-pl
 
 %description -n %{metapl}
 PostgreSQL is an advanced Object-Relational database management system. The
@@ -205,7 +196,6 @@ Summary:	The PL/Python procedural language for PostgreSQL
 Group:		Databases
 Provides:	%{name}-plpython = %{version}-%{release}
 #Requires:	postgresql-server >= %{version}
-Obsoletes:	postgresql9.0-plpython postgresql8.5-plpython postgresql8.4-plpython postgresql8.3-plpython postgresql8.2-plpython
 
 %description -n %{plpython}
 PostgreSQL is an advanced Object-Relational database management system. The
@@ -217,7 +207,6 @@ Summary:	The PL/Perl procedural language for PostgreSQL
 Group:		Databases	
 Provides:	%{name}-plperl = %{version}-%{release}
 #Requires:	postgresql-server >= %{version}
-Obsoletes:	postgresql9.0-plperl postgresql8.5-plperl postgresql8.4-plperl postgresql8.3-plperl postgresql8.2-plperl
 
 %description -n %{plperl}
 PostgreSQL is an advanced Object-Relational database management system. The
@@ -229,7 +218,6 @@ Summary:	The PL/Tcl procedural language for PostgreSQL
 Group:		Databases
 Provides:	%{name}-pltcl = %{version}-%{release}
 #Requires:	postgresql-server >= %{version}
-Obsoletes:	postgresql9.0-pltcl postgresql8.5-pltcl postgresql8.4-pltcl postgresql8.3-pltcl postgresql8.2-pltcl
 
 %description -n %{pltcl}
 PostgreSQL is an advanced Object-Relational database management system. The
@@ -241,7 +229,6 @@ Summary:	The PL/PgSQL procedural language for PostgreSQL
 Group:		Databases
 Provides:	%{name}-plpgsql = %{version}-%{release}
 #Requires:	postgresql-server >= %{version}
-Obsoletes:	postgresql9.0-plpgsql postgresql8.5-plpgsql postgresql8.4-plpgsql postgresql8.3-plpgsql postgresql8.2-plpgsql
 
 %description -n %{plpgsql}
 PostgreSQL is an advanced Object-Relational database management system. The
@@ -326,18 +313,19 @@ install -d -m 700 %{buildroot}/etc/sysconfig/pgsql
 
 # install systemd units
 mkdir -p %{buildroot}%{_unitdir}
-install -m 644 %{SOURCE11} %{buildroot}%{_unitdir}/%{bname}.service
+install -m 644 %{SOURCE11} %{buildroot}%{_unitdir}/%{name}.service
 
 # Create the directory for sockets.
 install -d -m 755 %{buildroot}/run/postgresql
 
 # ... and make a tmpfiles script to recreate it at reboot.
 mkdir -p %{buildroot}%{_tmpfilesdir}
-install -m 0644 %{SOURCE12} %{buildroot}%{_tmpfilesdir}/%{bname}.conf
+install -m 0644 %{SOURCE12} %{buildroot}%{_tmpfilesdir}/%{name}.conf
 
 # install helper script for env initialisation 
-mkdir -p %{buildroot}%{_prefix}/libexec
-install -m 755 %{SOURCE14} %{buildroot}%{_prefix}/libexec
+mkdir -p %{buildroot}%{_libexecdir}
+sed -e 's,@PGDIR@,%{pgdata},g' %{S:14} >%{buildroot}%{_libexecdir}/postgresql_initdb.sh
+chmod 0755 %{buildroot}%{_libexecdir}/postgresql_initdb.sh
 
 # Create the user and group
 mkdir -p %{buildroot}%{_sysusersdir}
@@ -426,6 +414,10 @@ cat pg_test_timing-%{majorversion}.lang >>main.lst
 cat pg_waldump-%{majorversion}.lang >>main.lst
 %find_lang pg_verifybackup-%{majorversion}
 cat pg_verifybackup-%{majorversion}.lang >>main.lst
+%find_lang pg_combinebackup-%{majorversion}
+cat pg_combinebackup-%{majorversion}.lang >>main.lst
+%find_lang pg_walsummary-%{majorversion}
+cat pg_walsummary-%{majorversion}.lang >>main.lst
 
 # contrib
 %find_lang pg_amcheck-%{majorversion}
@@ -462,17 +454,6 @@ cat > %{buildroot}/%_sys_macros_dir/%{name}.macros <<EOF
 %%pgmodules_req Requires: %{?arch_tagged:%arch_tagged %{name}-server-ABI}%{?!arch_tagged:%{name}-server-ABI} >= %{majorversion}
 EOF
 
-cat %{SOURCE13} > postgresql.omv.releasenote
-cat > README.urpmi <<EOF
-You just installed or updated %{name} server.
-You can find important information about OpenMandriva %{name} rpms and database
-management in:
-
-%{_defaultdocdir}/%{name}-server/postgresql.omv.releasenote
-
-Please read it.
-EOF
-
 # postgres' .profile and .bashrc
 install -D -m 700 %SOURCE10 %{buildroot}%{pgdata}/.profile
 (
@@ -501,33 +482,9 @@ EOF
 find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
 find %{buildroot} -type f -name "*.a" -exec rm -f {} ';'
 
-%pre -n %{server}
-# if upgrade
-
-[ ! -f %{pgdata}/data/PG_VERSION ] && exit 0
-mypgversion=`cat %{pgdata}/data/PG_VERSION`
-[ $mypgversion = %{majorversion} ] && exit 0
-
-echo ""
-echo "You currently have database tree for Postgresql $mypgversion"
-echo "You must use postgresql${mypgversion}-server"
-echo "To update you Postgresql server, dump your databases"
-echo "delete /var/lib/pgsql/data/ content, upgrade the server, then"
-echo "restore your databases from your backup"
-echo ""
-
-exit 1
-
-%posttrans -n %{server}
-%_post_service %{bname}
-%tmpfiles_create %{bname}
-
-%preun -n %{server}
-%_preun_service %{bname}
-
 %files -f main.lst
 %doc doc/KNOWN_BUGS doc/MISSING_FEATURES
-%doc COPYRIGHT README HISTORY
+%doc COPYRIGHT HISTORY
 %{_bindir}/clusterdb
 %{_bindir}/createdb
 %{_bindir}/createuser
@@ -547,6 +504,9 @@ exit 1
 %{_bindir}/psql
 %{_bindir}/reindexdb
 %{_bindir}/vacuumdb
+%{_bindir}/pg_combinebackup
+%{_bindir}/pg_createsubscriber
+%{_bindir}/pg_walsummary
 %{_datadir}/postgresql
 %{_mandir}/man1/clusterdb.*
 %{_mandir}/man1/createdb.*
@@ -554,6 +514,8 @@ exit 1
 %{_mandir}/man1/dropdb.*
 %{_mandir}/man1/dropuser.*
 %{_mandir}/man1/pg_checksums.1*
+%{_mandir}/man1/pg_combinebackup.1*
+%{_mandir}/man1/pg_createsubscriber.1*
 %{_mandir}/man1/pg_dump.*
 %{_mandir}/man1/pg_dumpall.*
 %{_mandir}/man1/pg_isready.1*
@@ -563,6 +525,7 @@ exit 1
 %{_mandir}/man1/pg_test_fsync.1*
 %{_mandir}/man1/pg_test_timing.1*
 %{_mandir}/man1/pg_waldump.1*
+%{_mandir}/man1/pg_walsummary.1*
 %{_mandir}/man1/pg_verifybackup.1*
 %{_mandir}/man1/psql.*
 %{_mandir}/man1/reindexdb.*
@@ -583,7 +546,6 @@ exit 1
 %{_docdir}/%{name}/extension
 
 %files -n %{contrib} -f contrib.lst
-%{_libdir}/postgresql/old_snapshot.so
 %{_libdir}/postgresql/pg_surgery.so
 %{_libdir}/postgresql/_int.so
 %{_libdir}/postgresql/amcheck.so
@@ -606,7 +568,6 @@ exit 1
 %{_libdir}/postgresql/pg_trgm.so
 %{_libdir}/postgresql/autoinc.so
 %{_libdir}/postgresql/pg_buffercache.so
-%{_libdir}/postgresql/adminpack.so
 %{_libdir}/postgresql/hstore.so
 %{_libdir}/postgresql/isn.so
 %{_libdir}/postgresql/pg_freespacemap.so
@@ -636,10 +597,9 @@ exit 1
 
 %files -n %{server} -f server.lst
 %{_sysusersdir}/postgresql.conf
-%{_unitdir}/%{bname}.service
-%{_tmpfilesdir}/%{bname}.conf
+%{_unitdir}/%{name}.service
+%{_tmpfilesdir}/%{name}.conf
 %config(noreplace) %{_sysconfdir}/sysconfig/postgresql
-%doc README.urpmi postgresql.omv.releasenote
 %{_bindir}/initdb
 %{_bindir}/pg_controldata
 %{_bindir}/pg_ctl
@@ -751,3 +711,46 @@ exit 1
 
 %files -n %{plpgsql} -f plpgsql.lst
 %{_libdir}/postgresql/plpgsql.so
+
+%pretrans server
+# Postgres major updates usually require a full dump and restore...
+OLDMAJOR="$(pg_dumpall --version 2>/dev/null |cut -d' ' -f3 |cut -d. -f1)"
+if [ -n "$OLDMAJOR" -a "0$OLDMAJOR" -lt %{majorversion} ]; then
+	echo "This is a major update from $OLDMAJOR to %{majorversion}"
+	if [ "$OLDMAJOR" -le 16 ]; then
+		OLDSERVICE=postgresql$OLDMAJOR
+	else
+		OLDSERVICE=postgresql
+	fi
+	UPDIR="%{pgdata}/update-from-$OLDMAJOR-to-%{majorversion}"
+	mkdir -p "$UPDIR"
+	chown postgres:postgres "$UPDIR"
+	if systemctl is-enabled $OLDSERVICE &>/dev/null; then
+		touch "$UPDIR/.was-enabled"
+	fi
+	if systemctl is-active $OLDSERVICE &>/dev/null; then
+		touch "$UPDIR/.was-running"
+	else
+		systemctl start $OLDSERVICE
+	fi
+	su - postgres -c "pg_dumpall -w -f $UPDIR/db.dump --quote-all-identifiers" &>$UPDIR/dump.log
+	systemctl stop $OLDSERVICE
+	mv %{pgdata}/data %{pgdata}/data-from-$OLDMAJOR
+fi
+
+%posttrans server
+if [ -d %{pgdata}/data-from-%{majorversion} ]; then
+	cat >&2 <<"EOF"
+You seem to be undoing an update.
+Moving the matching database files back in place.
+EOF
+	[ -d %{pgdata}/data ] && mv %{pgdata}/data %{pgdata}/data-failed-update
+	mv %{pgdata}/data-from-%{majorversion} %{pgdata}/data
+fi
+# Upgrading is handled in postgresql_initdb.sh on next startup
+UPDIR="$(ls -1d %{pgdata}/update-from-*-to-%{majorversion} |head -n1 2>/dev/null)"
+if [ -e "$UPDIR/.was-enabled" ]; then
+	systemctl enable --now postgresql
+elif [ -e "$UPDIR/.was-running" ]; then
+	systemctl start postgresql
+fi
