@@ -69,6 +69,7 @@ BuildRequires:	docbook-dtd31-sgml
 BuildRequires:	docbook-dtd41-sgml
 BuildRequires:	docbook-dtd42-sgml
 BuildRequires:	docbook-dtd44-xml
+BuildRequires:	docbook-dtd45-xml
 BuildRequires:	openjade
 BuildRequires:	perl-devel
 BuildRequires:	pkgconfig(libnsl)
@@ -284,7 +285,7 @@ echo "#define HAVE_OSSP_UUID_H 1" >> src/include/pg_config.h
 
 # python_libspec incorrectly uses the static python lib causing failures due to lto
 # in any case we should use the shared one
-%make world python_libspec=`python --libs`
+%make_build world
 
 pushd src/test
 make all
