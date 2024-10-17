@@ -37,7 +37,7 @@ Version:	17.0
 Release:	%{?beta:0.%{beta}.}1
 License:	BSD
 Group:		Databases
-URL:		http://www.postgresql.org/ 
+URL:		https://www.postgresql.org/ 
 Source0:	http://ftp.postgresql.org/pub/source/v%{fsversion}/postgresql-%{fsversion}.tar.bz2
 Source10:	postgres.profile
 Source11:	postgresql.service
