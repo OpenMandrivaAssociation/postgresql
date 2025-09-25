@@ -33,7 +33,7 @@
 
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
-Version:	17.5
+Version:	18.0
 Release:	%{?beta:0.%{beta}.}1
 License:	BSD
 Group:		Databases
@@ -574,6 +574,8 @@ find %{buildroot} -type f -name "*.a" -exec rm -f {} ';'
 %{_libdir}/postgresql/pg_freespacemap.so
 %{_libdir}/postgresql/pg_prewarm.so
 %{_libdir}/postgresql/pg_visibility.so
+%{_libdir}/postgresql/pg_logicalinspect.so
+%{_libdir}/postgresql/pg_overexplain.so
 %{_libdir}/postgresql/pgoutput.so
 %{_libdir}/postgresql/pgrowlocks.so
 %{_libdir}/postgresql/sslinfo.so
