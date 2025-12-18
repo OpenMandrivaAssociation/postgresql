@@ -46,6 +46,11 @@ Source14:	postgresql_initdb.sh
 
 Source100:	%name.rpmlintrc
 Patch1:		postgresql-run-socket.patch
+BuildRequires:	autoconf
+BuildRequires:	automake
+BuildRequires:	libtool-base
+BuildRequires:	slibtool
+BuildRequires:	make
 BuildRequires:	bison
 BuildRequires:	flex
 BuildRequires:	pkgconfig(openssl)
