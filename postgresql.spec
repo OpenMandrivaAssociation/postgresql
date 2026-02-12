@@ -33,8 +33,8 @@
 
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
-Version:	18.1
-Release:	%{?beta:0.%{beta}.}3
+Version:	18.2
+Release:	%{?beta:0.%{beta}.}1
 License:	BSD
 Group:		Databases
 URL:		https://www.postgresql.org/ 
@@ -48,7 +48,6 @@ Source100:	%name.rpmlintrc
 Patch1:		postgresql-run-socket.patch
 BuildRequires:	autoconf
 BuildRequires:	automake
-BuildRequires:	libtool-base
 BuildRequires:	slibtool
 BuildRequires:	make
 BuildRequires:	bison
