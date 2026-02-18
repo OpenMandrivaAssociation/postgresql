@@ -3,8 +3,18 @@ Description=PostgreSQL database server
 After=network.target
 
 [Service]
-Type=forking
-PIDFile=/var/lib/pgsql/data/postmaster.pid
+Type=notify
+PIDFile=/srv/pgsql/data/postmaster.pid
+
+RuntimeDirectory=postgresql
+RuntimeDirectoryMode=0755
+
+ProtectSystem=strict
+ReadWritePaths=/srv/pgsql /run/postgresql
+ProtectHome=true
+NoNewPrivileges=true
+ProtectKernelModules=true
+ProtectControlGroups=true
 
 User=postgres
 Group=postgres
@@ -13,7 +23,10 @@ Group=postgres
 Environment=PGPORT=5432
 
 # Location of database directory
-Environment=PGDATA=/var/lib/pgsql/data
+Environment=PGDATA=/srv/pgsql/data
+
+# For IO_URING
+LimitedMEMLOCK=infinity
 
 # Where to send early-startup messages from the server (before the logging
 # options of postgresql.conf take effect)
@@ -24,7 +37,7 @@ Environment=PGDATA=/var/lib/pgsql/data
 OOMScoreAdjust=-1000
 
 ExecStartPre=/usr/libexec/postgresql_initdb.sh ${PGDATA}
-ExecStart=/usr/bin/pg_ctl start -D ${PGDATA} -s -o "-p ${PGPORT}" -w -t 300
+ExecStart=/usr/bin/postgres -D ${PGDATA} -p ${PGPORT}
 ExecStop=/usr/bin/pg_ctl stop -D ${PGDATA} -s -m fast
 ExecReload=/usr/bin/pg_ctl reload -D ${PGDATA} -s
 

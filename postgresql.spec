@@ -21,11 +21,12 @@
 %define pltcl %{name}-pltcl
 %define plpgsql %{name}-plpgsql
 
-%define pgdata /var/lib/pgsql
+%define pgdata /srv/pgsql
 %define pguser postgres
 %define logrotatedir %{_sysconfdir}/logrotate.d
 
-%bcond_without uuid
+# PostgreSQL modules are allergic to -Wl,--no-undefined
+%global _disable_ld_no_undefined 1
 
 #define beta rc1
 %define fsversion %{version}%{?beta:%{beta}}
@@ -34,7 +35,7 @@
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
 Version:	18.2
-Release:	%{?beta:0.%{beta}.}1
+Release:	%{?beta:0.%{beta}.}2
 License:	BSD
 Group:		Databases
 URL:		https://www.postgresql.org/ 
@@ -46,10 +47,8 @@ Source14:	postgresql_initdb.sh
 
 Source100:	%name.rpmlintrc
 Patch1:		postgresql-run-socket.patch
-BuildRequires:	autoconf
-BuildRequires:	automake
-BuildRequires:	slibtool
-BuildRequires:	make
+Patch2:		postgresql-config-tweaks.patch
+BuildRequires:	meson
 BuildRequires:	bison
 BuildRequires:	flex
 BuildRequires:	pkgconfig(openssl)
@@ -61,12 +60,12 @@ BuildRequires:	tcl-devel
 BuildRequires:	pkgconfig(libxml-2.0)
 BuildRequires:	pkgconfig(libxslt)
 BuildRequires:	pkgconfig(zlib)
+BuildRequires:	pkgconfig(liburing)
 BuildRequires:	rpm-helper
 BuildRequires:	systemd
 BuildRequires:	gettext-devel
-%if %{with uuid}
-BuildRequires:	ossp-uuid-devel >= 1.6.2-5
-%endif
+BuildRequires:	pkgconfig(uuid)
+BuildRequires:	cmake(LLVM)
 # Need to build doc
 BuildRequires:	locales-extra-charsets
 BuildRequires:	docbook-dtd31-sgml
@@ -243,63 +242,41 @@ the backend. PL/PgSQL is part of the core server package.
 %prep
 %autosetup -p1 -n postgresql-%{fsversion}
 
+%conf
+# Dep for docs_pdf: fop
+export LDFLAGS="%{build_ldflags} -Wl,--allow-shlib-undefined"
+%meson \
+	--sysconfdir=%{_sysconfdir}/pgsql \
+	-Dbsd_auth=disabled \
+	-Dbonjour=disabled \
+	-Ddocs_pdf=disabled \
+	-Dsystemd=enabled \
+	-Dplperl=enabled \
+	-Dplpython=enabled \
+	-Dpltcl=enabled \
+	-Dssl=openssl \
+	-Dpam=enabled \
+	-Dlibxml=enabled \
+	-Dlibxslt=enabled \
+	-Dnls=enabled \
+	-Drpath=false \
+	-Duuid=e2fs \
+	-Dicu=enabled \
+	-Dllvm=enabled \
+	-Ddocs=enabled \
+	-Dlz4=enabled \
+	-Dzstd=enabled \
+	-Dliburing=enabled
+
 %build
-%setup_compile_flags
-
-%ifarch %{ix86}
-# As of postgresql 11.0-beta2 and clang 7.0-338892,
-# building with clang on i686 causes a test failure in
-# the float8 test.
-# Get rid of gcc use once that's fixed.
-CC=gcc CXX=g++ \
-%endif
-%configure \
-    --disable-rpath \
-    --with-perl \
-    --with-python \
-    --with-tcl \
-    --with-tclconfig=%{_libdir} \
-    --with-openssl \
-    --with-pam \
-    --with-libxml \
-%ifarch riscv64
-    --disable-spinlocks \
-%endif
-    --with-libxslt \
-    --libdir=%{_libdir} \
-    --mandir=%{_mandir} \
-    --prefix=%{_prefix} \
-    --sysconfdir=%{_sysconfdir}/pgsql \
-    --enable-nls \
-%if %{with uuid}
-    --with-uuid=ossp \
-    --with-includes=%{_includedir}/ossp-uuid
-%endif
-
-# $(rpathdir) come from Makefile
-#perl -pi -e 's|^all:|LINK.shared=\$(COMPILER) -shared -Wl,-rpath,\$(rpathdir),-soname,\$(soname)\nall:|' src/pl/plperl/GNUmakefile
-
-# nuke -Wl,--no-undefined
-perl -pi -e "s|-Wl,--no-undefined||g" src/Makefile.global
-
-%if %{with uuid}
-# bork...
-echo "#define HAVE_OSSP_UUID_H 1" >> src/include/pg_config.h
-%endif
-
-# python_libspec incorrectly uses the static python lib causing failures due to lto
-# in any case we should use the shared one
-%make_build world
-
-pushd src/test
-make all
-popd
+%meson_build
 
 %check
-make check
+%meson_test
 
 %install
-make DESTDIR=%{buildroot} install-world install-docs
+%meson_install
+DESTDIR="%{buildroot}" ninja -C %{_vpath_builddir} install-docs
 
 # install odbcinst.ini
 mkdir -p %{buildroot}%{_sysconfdir}/pgsql
@@ -360,8 +337,6 @@ cat > %{buildroot}%logrotatedir/%{name} <<EOF
     copytruncate
 }
 EOF
-
-mv %{buildroot}%{_docdir}/%{name}/html %{buildroot}%{_docdir}/%{name}-docs-%{version}
 
 echo -n "" > %{libname}.lst
 echo -n "" > %{libecpg}.lst
@@ -487,6 +462,16 @@ EOF
 find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
 find %{buildroot} -type f -name "*.a" -exec rm -f {} ';'
 
+# We insert this here instead of patching the config template so the
+# test suite won't be affected -- it wants more traditional settings
+sed -i -e 's,^#jit = on,jit = on,' %{buildroot}%{_datadir}/postgresql/postgresql.conf.sample
+sed -i -e '/# - Disk -/aio_method = io_uring' %{buildroot}%{_datadir}/postgresql/postgresql.conf.sample
+
+# Migrated to /srv after 6.0, 2026/02/18, 18.2-2
+%pretrans -p <lua>
+omv = require("omv")
+omv.dir2Symlink("/var/lib/pgsql", "/srv/pgsql")
+
 %files -f main.lst
 %doc doc/KNOWN_BUGS doc/MISSING_FEATURES
 %doc COPYRIGHT HISTORY
@@ -513,6 +498,7 @@ find %{buildroot} -type f -name "*.a" -exec rm -f {} ';'
 %{_bindir}/pg_createsubscriber
 %{_bindir}/pg_walsummary
 %{_datadir}/postgresql
+%{_libdir}/libpq-oauth-18.so
 %{_mandir}/man1/clusterdb.*
 %{_mandir}/man1/createdb.*
 %{_mandir}/man1/createuser.*
@@ -547,8 +533,7 @@ find %{buildroot} -type f -name "*.a" -exec rm -f {} ';'
 %{_libdir}/libpgtypes.so.*
 
 %files docs
-%doc %{_docdir}/%{name}-docs-%{version}
-%{_docdir}/%{name}/extension
+%doc %{_docdir}/%{name}
 
 %files -n %{contrib} -f contrib.lst
 %{_libdir}/postgresql/pg_surgery.so
@@ -582,6 +567,7 @@ find %{buildroot} -type f -name "*.a" -exec rm -f {} ';'
 %{_libdir}/postgresql/pg_overexplain.so
 %{_libdir}/postgresql/pgoutput.so
 %{_libdir}/postgresql/pgrowlocks.so
+%{_libdir}/postgresql/sepgsql.so
 %{_libdir}/postgresql/sslinfo.so
 %{_libdir}/postgresql/pageinspect.so
 %{_libdir}/postgresql/postgres_fdw.so
@@ -648,9 +634,9 @@ find %{buildroot} -type f -name "*.a" -exec rm -f {} ';'
 %{_libdir}/postgresql/tsm_system_rows.so
 %{_libdir}/postgresql/tsm_system_time.so
 %{_libdir}/postgresql/unaccent.so
-%if %{with uuid}
 %{_libdir}/postgresql/uuid-ossp.so
-%endif
+%{_libdir}/postgresql/llvmjit.so
+%{_libdir}/postgresql/llvmjit_types.bc
 %{_datadir}/postgresql/postgres.bki
 %{_datadir}/postgresql/*.sample
 %{_datadir}/postgresql/timezone
