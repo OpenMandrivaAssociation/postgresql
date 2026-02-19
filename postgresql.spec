@@ -64,6 +64,7 @@ BuildRequires:	pkgconfig(liburing)
 BuildRequires:	pkgconfig(krb5-gssapi)
 BuildRequires:	pkgconfig(ldap)
 BuildRequires:	pkgconfig(libcurl)
+BuildRequires:	pkgconfig(numa)
 BuildRequires:	rpm-helper
 BuildRequires:	systemd
 BuildRequires:	gettext-devel
