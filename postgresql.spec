@@ -67,6 +67,7 @@ BuildRequires:	pkgconfig(libcurl)
 BuildRequires:	pkgconfig(numa)
 BuildRequires:	pkgconfig(liblz4)
 BuildRequires:	pkgconfig(libzstd)
+BuildRequires:	pkgconfig(libselinux)
 BuildRequires:	rpm-helper
 BuildRequires:	systemd
 BuildRequires:	gettext-devel
