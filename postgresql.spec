@@ -69,6 +69,7 @@ BuildRequires:	pkgconfig(liblz4)
 BuildRequires:	pkgconfig(libzstd)
 BuildRequires:	pkgconfig(libselinux)
 BuildRequires:	pkgconfig(libsystemd)
+BuildRequires:	perl(IPC::Run)
 BuildRequires:	rpm-helper
 BuildRequires:	systemd
 BuildRequires:	gettext-devel
