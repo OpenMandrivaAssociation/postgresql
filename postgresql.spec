@@ -283,7 +283,7 @@ export LDFLAGS="%{build_ldflags} -Wl,--allow-shlib-undefined"
 
 %check
 # oauth_validator fails in abf (but works locally)
-%meson_test --exclude_suite oauth_validator
+%meson_test --exclude-suite oauth_validator
 
 %install
 %meson_install
