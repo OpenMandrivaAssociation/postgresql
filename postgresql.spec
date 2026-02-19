@@ -61,6 +61,7 @@ BuildRequires:	pkgconfig(libxml-2.0)
 BuildRequires:	pkgconfig(libxslt)
 BuildRequires:	pkgconfig(zlib)
 BuildRequires:	pkgconfig(liburing)
+BuildRequires:	pkgconfig(krb5-gssapi)
 BuildRequires:	rpm-helper
 BuildRequires:	systemd
 BuildRequires:	gettext-devel
