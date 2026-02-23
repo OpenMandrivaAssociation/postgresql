@@ -35,7 +35,7 @@
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
 Version:	18.2
-Release:	%{?beta:0.%{beta}.}2
+Release:	%{?beta:0.%{beta}.}3
 License:	BSD
 Group:		Databases
 URL:		https://www.postgresql.org/ 
@@ -44,6 +44,7 @@ Source10:	postgres.profile
 Source11:	postgresql.service
 Source12:	postgresql.tmpfiles.d
 Source14:	postgresql_initdb.sh
+Source15:	reindex-databases
 
 Source100:	%name.rpmlintrc
 Patch1:		postgresql-run-socket.patch
@@ -479,6 +480,10 @@ find %{buildroot} -type f -name "*.a" -exec rm -f {} ';'
 sed -i -e 's,^#jit = on,jit = on,' %{buildroot}%{_datadir}/postgresql/postgresql.conf.sample
 sed -i -e '/# - Disk -/aio_method = io_uring' %{buildroot}%{_datadir}/postgresql/postgresql.conf.sample
 
+# See triggerpostun near the bottom of the file
+mkdir -p %{buildroot}%{_libexecdir}/postgresql
+install -c -m 755 %{S:15} %{buildroot}%{_libexecdir}/postgresql/
+
 # Migrated to /srv after 6.0, 2026/02/18, 18.2-2
 %pretrans -p <lua>
 omv = require("omv")
@@ -681,6 +686,8 @@ omv.dir2Symlink("/var/lib/pgsql", "/srv/pgsql")
 %{_bindir}/pg_basebackup
 %{_mandir}/man1/pg_basebackup.*
 %{_libdir}/postgresql/basebackup_to_shell.so
+%dir %{_libexecdir}/postgresql
+%{_libexecdir}/postgresql/reindex-databases
 
 %files devel -f devel.lst
 # %doc doc/TODO doc/TODO.detail
@@ -758,4 +765,25 @@ if [ -e "$UPDIR/.was-enabled" ]; then
 	systemctl enable --now postgresql
 elif [ -e "$UPDIR/.was-running" ]; then
 	systemctl start postgresql
+fi
+
+%triggerpostun server -- glibc
+# postgres is very picky about any changes in collation rules, whenever glibc gets updated.
+# e.g.
+# WARNING:  database "mail" has a collation version mismatch
+# DETAIL:  The database was created using collation version 2.42, but the operating system provides version 2.43.
+# HINT:  Rebuild all objects in this database that use the default collation and run ALTER DATABASE mail REFRESH COLLATION VERSION, or build PostgreSQL with the right library version.
+# REFRESH COLLATION VERSION only updates the version numbers; we have to reindex
+# the database as well just in case something actually changed.
+# "triggerpostun" may not be the obvious place to do this, but it is the right
+# one -- on a glibc update, we get triggerin first (when the new version is
+# installed), then triggerun, then triggerpostun (when the old version is
+# removed).
+if %{_bindir}/systemctl is-active --quiet postgresql; then
+	%{_bindir}/systemd-run --unit=pg-collation-fix \
+		--description="Automated Postgres Collation Refresh after glibc update" \
+		--property=After=postgresql.service \
+		--quiet \
+		--remain-after-exit=no \
+		%{_libexecdir}/postgresql/reindex-databases
 fi
