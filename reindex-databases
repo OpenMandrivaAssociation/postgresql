@@ -1,0 +1,36 @@
+#!/bin/bash
+set -e
+
+echo "=================================================================="
+echo "Reindexing all PostgreSQL databases to make sure collation matches"
+echo "=================================================================="
+
+# Safely cap jobs at 4, or use half of nproc, whichever is smaller
+# Using 16 threads would speed up CPU processing, but there is a
+# massive I/O bottleneck
+JOBS=$(nproc)
+(( JOBS = JOBS > 4 ? 4 : JOBS ))
+
+# 1. Get a list of all databases that allow connections
+DB_LIST=$(sudo -u postgres psql -Atc "SELECT datname FROM pg_database WHERE datallowconn = true AND datname NOT LIKE 'template%';")
+
+for db in $DB_LIST; do
+    echo "--------------------------------------------------------"
+    echo "Processing Database: $db"
+    echo "--------------------------------------------------------"
+
+    # 2. Reindex concurrently (won't block reads/writes)
+    # Using 4 parallel jobs to speed it up
+    echo "Step 1: Reindexing concurrently..."
+    sudo -u postgres reindexdb --all --concurrently --jobs=$JOBS --dbname="$db"
+
+    # 3. Refresh the collation version to clear the warning
+    echo "Step 2: Refreshing collation version..."
+    sudo -u postgres psql -d "$db" -c "ALTER DATABASE \"$db\" REFRESH COLLATION VERSION;"
+
+    echo "Done with $db"
+done
+
+echo "--------------------------------------------------------"
+echo "All databases processed successfully."
+
