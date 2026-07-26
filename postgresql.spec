@@ -35,7 +35,7 @@
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
 Version:	18.4
-Release:	%{?beta:0.%{beta}.}2
+Release:	%{?beta:0.%{beta}.}3
 License:	BSD
 Group:		Databases
 URL:		https://www.postgresql.org/ 
