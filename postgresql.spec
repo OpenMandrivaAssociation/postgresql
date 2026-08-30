@@ -35,7 +35,7 @@
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
 Version:	18.6
-Release:	%{?beta:0.%{beta}.}1
+Release:	%{?beta:0.%{beta}.}2
 License:	BSD
 Group:		Databases
 URL:		https://www.postgresql.org/ 
@@ -45,6 +45,7 @@ Source11:	postgresql.service
 Source12:	postgresql.tmpfiles.d
 Source14:	postgresql_initdb.sh
 Source15:	reindex-databases
+Source16:	postgresql-preload.sh
 
 Source100:	%name.rpmlintrc
 Patch1:		postgresql-run-socket.patch
@@ -138,6 +139,7 @@ Summary:	The programs needed to create and run a PostgreSQL server
 Group:		Databases
 Provides:	sqlserver
 Provides:	postgresql-server = %{version}-%{release}
+Provides:	postgresql-preload-d
 # add/remove services
 Requires(post):	rpm-helper
 Requires(preun):	rpm-helper
@@ -321,6 +323,22 @@ install -m 0644 %{SOURCE12} %{buildroot}%{_tmpfilesdir}/%{name}.conf
 mkdir -p %{buildroot}%{_libexecdir}
 sed -e 's,@PGDIR@,%{pgdata},g' %{S:14} >%{buildroot}%{_libexecdir}/postgresql_initdb.sh
 chmod 0755 %{buildroot}%{_libexecdir}/postgresql_initdb.sh
+
+# Drop-in directory for shared_preload_libraries (one file per module).
+mkdir -p %{buildroot}%{_prefix}/lib/postgresql/preload.d
+mkdir -p %{buildroot}%{_sysconfdir}/postgresql/preload.d
+cat > %{buildroot}%{_prefix}/lib/postgresql/preload.d/README <<'EOF'
+Drop a file named after the module (e.g. vchord) to add it to
+shared_preload_libraries when PostgreSQL is started via systemd.
+Admin overrides go in /etc/postgresql/preload.d/.
+The shared object must exist in pkglibdir; missing modules are skipped.
+EOF
+sed \
+	-e 's,@PKGLIBDIR@,%{_libdir}/postgresql,g' \
+	-e 's,@SYS_PRELOAD@,%{_prefix}/lib/postgresql/preload.d,g' \
+	-e 's,@ETC_PRELOAD@,%{_sysconfdir}/postgresql/preload.d,g' \
+	%{S:16} >%{buildroot}%{_libexecdir}/postgresql-preload.sh
+chmod 0755 %{buildroot}%{_libexecdir}/postgresql-preload.sh
 
 # Create the user and group
 mkdir -p %{buildroot}%{_sysusersdir}
@@ -619,6 +637,12 @@ omv.dir2Symlink("/var/lib/pgsql", "/srv/pgsql")
 %{_bindir}/pg_archivecleanup
 %{_bindir}/pg_upgrade
 %{_prefix}/libexec/postgresql_initdb.sh
+%{_prefix}/libexec/postgresql-preload.sh
+%dir %{_prefix}/lib/postgresql
+%dir %{_prefix}/lib/postgresql/preload.d
+%{_prefix}/lib/postgresql/preload.d/README
+%dir %{_sysconfdir}/postgresql
+%dir %{_sysconfdir}/postgresql/preload.d
 %{_mandir}/man1/initdb.1*
 %{_mandir}/man1/pg_controldata.*
 %{_mandir}/man1/pg_ctl.1*

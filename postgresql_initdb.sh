@@ -23,7 +23,10 @@ if [ ! -f ${PGDATA}/PG_VERSION ]; then
 		OLDMAJOR=$(echo $UPDIR |sed -e 's,.*update-from-,,;s,-.*,,')
 		echo "Resuming update from ${OLDMAJOR} to ${MAJORVERSION}"
                 cp -af @PGDIR@/data-from-${OLDMAJOR}/*.{conf,opts} "${PGDATA}"
-                pg_ctl start -D ${PGDATA} -s -o "-p 5432" -w -t 300
+                _opts="-p 5432"
+                _guc=$(/usr/libexec/postgresql-preload.sh guc "${PGDATA}")
+                [ -n "$_guc" ] && _opts="$_opts -c shared_preload_libraries=${_guc}"
+                pg_ctl start -D ${PGDATA} -s -o "$_opts" -w -t 300
                 psql -f ${UPDIR}/db.dump postgres &>${UPDIR}/restore.log
                 vacuumdb -a -z &>${UPDIR}/vacuumdb.log
                 pg_ctl stop -D "${PGDATA}"
