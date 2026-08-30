@@ -1,0 +1,17 @@
+--- postgresql-18.6/src/backend/jit/llvm/meson.build.omv~
++++ postgresql-18.6/src/backend/jit/llvm/meson.build
+@@ -61,7 +61,13 @@ endif
+ 
+ # XXX: Need to determine proper version of the function cflags for clang
+ bitcode_cflags = ['-fno-strict-aliasing', '-fwrapv']
+-bitcode_cflags += get_option('c_args')
++# PGO/coverage flags belong on native objects. Passing them into -emit-llvm
++# bitcode used for JIT inlining produces unusable IR.
++foreach _arg : get_option('c_args')
++  if not _arg.contains('fprofile-') and not _arg.contains('fcoverage-')
++    bitcode_cflags += _arg
++  endif
++endforeach
+ bitcode_cflags += cppflags
+ 
+ # XXX: Worth improving on the logic to find directories here

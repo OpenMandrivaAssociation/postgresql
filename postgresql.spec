@@ -2,6 +2,9 @@
 
 %define _disable_lto 1
 
+# rpmbuild --without pgo for a one-pass baseline (this rpm has no --nopgo)
+%bcond_without pgo
+
 %define major 5
 %define oldmajor_ecpg 7
 %define major_ecpg 6
@@ -35,7 +38,7 @@
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
 Version:	18.6
-Release:	%{?beta:0.%{beta}.}2
+Release:	%{?beta:0.%{beta}.}3
 License:	BSD
 Group:		Databases
 URL:		https://www.postgresql.org/ 
@@ -50,6 +53,7 @@ Source16:	postgresql-preload.sh
 Source100:	%name.rpmlintrc
 Patch1:		postgresql-run-socket.patch
 Patch2:		postgresql-config-tweaks.patch
+Patch3:		postgresql-pgo-bitcode.patch
 BuildRequires:	meson
 BuildRequires:	bison
 BuildRequires:	flex
@@ -78,6 +82,7 @@ BuildRequires:	systemd
 BuildRequires:	gettext-devel
 BuildRequires:	pkgconfig(uuid)
 BuildRequires:	cmake(LLVM)
+BuildRequires:	llvm
 # Need to build doc
 BuildRequires:	locales-extra-charsets
 BuildRequires:	docbook-dtd31-sgml
@@ -257,7 +262,8 @@ the backend. PL/PgSQL is part of the core server package.
 
 %conf
 # Dep for docs_pdf: fop
-export LDFLAGS="%{build_ldflags} -Wl,--allow-shlib-undefined"
+# Keep PGO LDFLAGS from the environment when rpm injects them.
+export LDFLAGS="${LDFLAGS:-%{build_ldflags}} -Wl,--allow-shlib-undefined"
 %meson \
 	--sysconfdir=%{_sysconfdir}/pgsql \
 	-Dbsd_auth=disabled \
@@ -283,6 +289,81 @@ export LDFLAGS="%{build_ldflags} -Wl,--allow-shlib-undefined"
 
 %build
 %meson_build
+
+%if %{with pgo}
+# Short OLTP-ish mix. Regression tests spend too much time on error paths.
+# The instrumented server is started from the meson build tree on a private
+# port; system PostgreSQL is left alone.
+%pgo
+_bd="$PWD/%{_vpath_builddir}"
+# initdb insists that postgres live in the same directory as itself.
+# Stage an install tree so the instrumented tools have a normal layout.
+_dest="$PWD/pgo-dest"
+rm -rf "$_dest"
+DESTDIR="$_dest" meson install -C "$_bd" --no-rebuild --quiet
+export PATH="$_dest%{_bindir}:$PATH"
+export LD_LIBRARY_PATH="$_dest%{_libdir}${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+# Unique file per process so forked backends do not clobber each other.
+export LLVM_PROFILE_FILE="%{_pgo_profile_dir}/%m_%p.profraw"
+mkdir -p "%{_pgo_profile_dir}"
+
+for b in postgres initdb pg_ctl pgbench psql; do
+	if ! command -v "$b" >/dev/null; then
+		echo "PGO: missing $b after staging $_dest" >&2
+		find "$_dest" -name "$b" -type f 2>/dev/null || true
+		exit 1
+	fi
+done
+
+_pgdata="$PWD/pgo-data"
+_sockdir="${TMPDIR:-/tmp}/postgresql-pgo-$$"
+_port=55432
+_log="$PWD/pgo-postgres.log"
+rm -rf "$_pgdata" "$_sockdir"
+mkdir -p "$_sockdir"
+
+initdb -D "$_pgdata" --no-sync
+cat >> "$_pgdata/postgresql.conf" <<EOF
+port = $_port
+unix_socket_directories = '$_sockdir'
+listen_addresses = ''
+shared_buffers = 256MB
+work_mem = 16MB
+maintenance_work_mem = 256MB
+max_wal_size = 2GB
+fsync = off
+synchronous_commit = off
+full_page_writes = off
+jit = on
+EOF
+
+pg_ctl -D "$_pgdata" -l "$_log" -w start || {
+	echo "PGO: postgres failed to start, log:" >&2
+	cat "$_log" >&2
+	exit 1
+}
+psql -h "$_sockdir" -p "$_port" -d postgres -c "CREATE DATABASE pgo"
+pgbench -h "$_sockdir" -p "$_port" -i -s 20 pgo
+# TPC-B-like writes + read-only selects
+pgbench -h "$_sockdir" -p "$_port" -c 8 -j 8 -T 90 pgo
+pgbench -h "$_sockdir" -p "$_port" -S -c 8 -j 8 -T 60 pgo
+# Planner / join / catalog paths the default pgbench scripts barely touch
+psql -h "$_sockdir" -p "$_port" -d pgo -v ON_ERROR_STOP=1 <<'SQL'
+ANALYZE;
+EXPLAIN ANALYZE SELECT count(*) FROM pgbench_accounts WHERE abalance <> 0;
+EXPLAIN ANALYZE
+  SELECT a.aid, sum(t.delta)
+  FROM pgbench_accounts a
+  JOIN pgbench_history t ON a.aid = t.aid
+  GROUP BY a.aid
+  ORDER BY 2 DESC
+  LIMIT 50;
+SELECT relname, n_live_tup FROM pg_stat_user_tables ORDER BY relname;
+SELECT count(*) FROM generate_series(1, 100000) g;
+SQL
+pg_ctl -D "$_pgdata" -m fast -w stop
+rm -rf "$_pgdata" "$_sockdir"
+%endif
 
 %check
 # oauth_validator fails in abf (but works locally)
