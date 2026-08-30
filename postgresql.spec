@@ -38,7 +38,7 @@
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
 Version:	18.6
-Release:	%{?beta:0.%{beta}.}3
+Release:	%{?beta:0.%{beta}.}4
 License:	BSD
 Group:		Databases
 URL:		https://www.postgresql.org/ 
@@ -373,6 +373,20 @@ sed -i -e '/oauth_validator/d' src/test/modules/meson.build
 %install
 %meson_install
 DESTDIR="%{buildroot}" ninja -C %{_vpath_builddir} install-docs
+
+# Meson records pass-2 CFLAGS (including -fprofile-use=/builddir/.../merged.profdata)
+# into Makefile.global. PGXS extensions then fail to compile because that
+# profile file does not exist on the user's or builder's machine. Strip them.
+find %{buildroot} -type f \( -name 'Makefile.global' -o -name 'Makefile.port' \) -print |
+while read -r f; do
+	sed -i \
+		-e 's/ -fprofile-generate=[^ ]*//g' \
+		-e 's/ -fprofile-use=[^ ]*//g' \
+		-e 's/ -fprofile-update=atomic//g' \
+		-e 's/ -fprofile-correction//g' \
+		-e 's/ -Wno-missing-profile//g' \
+		"$f"
+done
 
 # install odbcinst.ini
 mkdir -p %{buildroot}%{_sysconfdir}/pgsql
