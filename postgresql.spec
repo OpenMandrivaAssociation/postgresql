@@ -38,7 +38,7 @@
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
 Version:	18.6
-Release:	%{?beta:0.%{beta}.}4
+Release:	%{?beta:0.%{beta}.}5
 License:	BSD
 Group:		Databases
 URL:		https://www.postgresql.org/ 
@@ -371,6 +371,21 @@ sed -i -e '/oauth_validator/d' src/test/modules/meson.build
 %meson_test
 
 %install
+# pg_config embeds CFLAGS at compile time. The PGO profile path must not
+# ship, or every PGXS configure fails looking for merged.profdata.
+find %{_vpath_builddir} -type f \( -name '*.c' -o -name '*.h' -o -name '*.ninja' \) -print |
+while read -r f; do
+	grep -q fprofile-use "$f" || continue
+	sed -i \
+		-e 's/ -fprofile-generate=[^ "]*//g' \
+		-e 's/ -fprofile-use=[^ "]*//g' \
+		-e 's/ -fprofile-update=atomic//g' \
+		-e 's/ -fprofile-correction//g' \
+		-e 's/ -Wno-missing-profile//g' \
+		"$f"
+done
+_pg_config_target=$(ninja -C %{_vpath_builddir} -t targets all | awk -F: '/\/pg_config:/ { print $1; exit }')
+ninja -C %{_vpath_builddir} "$_pg_config_target"
 %meson_install
 DESTDIR="%{buildroot}" ninja -C %{_vpath_builddir} install-docs
 
