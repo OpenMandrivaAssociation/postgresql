@@ -373,7 +373,7 @@ sed -i -e '/oauth_validator/d' src/test/modules/meson.build
 %install
 # pg_config embeds CFLAGS at compile time. The PGO profile path must not
 # ship, or every PGXS configure fails looking for merged.profdata.
-find %{_vpath_builddir} -type f \( -name '*.c' -o -name '*.h' -o -name '*.ninja' \) -print |
+find %{_vpath_builddir} -type f \( -name '*.c' -o -name '*.h' \) -print |
 while read -r f; do
 	grep -q fprofile-use "$f" || continue
 	sed -i \
