@@ -38,7 +38,7 @@
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
 Version:	18.6
-Release:	%{?beta:0.%{beta}.}6
+Release:	%{?beta:0.%{beta}.}7
 License:	BSD
 Group:		Databases
 URL:		https://www.postgresql.org/ 
@@ -371,23 +371,27 @@ sed -i -e '/oauth_validator/d' src/test/modules/meson.build
 %meson_test
 
 %install
-# pg_config embeds CFLAGS at compile time. The PGO profile path must not
-# ship, or every PGXS configure fails looking for merged.profdata.
-find %{_vpath_builddir} -type f \( -name '*.c' -o -name '*.h' \) -print |
-while read -r f; do
-	grep -q fprofile-use "$f" || continue
-	sed -i \
-		-e 's/ -fprofile-generate=[^ "]*//g' \
-		-e 's/ -fprofile-use=[^ "]*//g' \
-		-e 's/ -fprofile-update=atomic//g' \
-		-e 's/ -fprofile-correction//g' \
-		-e 's/ -Wno-missing-profile//g' \
-		"$f"
-done
-_pg_config_target=$(ninja -C %{_vpath_builddir} -t targets all | awk -F: '/\/pg_config:/ { print $1; exit }')
-ninja -C %{_vpath_builddir} "$_pg_config_target"
 %meson_install
 DESTDIR="%{buildroot}" ninja -C %{_vpath_builddir} install-docs
+
+# pg_config embeds CFLAGS in the binary. Stripping sources does not rebuild
+# it ("ninja: no work to do"), and PGXS configure then fails on the missing
+# merged.profdata. Blank the profile flags in place.
+python - %{buildroot}%{_bindir}/pg_config << 'PY'
+import re, sys
+path = sys.argv[1]
+data = open(path, "rb").read()
+pat = re.compile(
+    br"-fprofile-(?:use|generate)=[^ \x00]*"
+    br"|-fprofile-update=atomic"
+    br"|-fprofile-correction"
+    br"|-Wno-missing-profile"
+)
+new = pat.sub(lambda m: b" " * len(m.group(0)), data)
+if new == data:
+    raise SystemExit("pg_config still has no PGO CFLAGS to strip")
+open(path, "wb").write(new)
+PY
 
 # Meson records pass-2 CFLAGS (including -fprofile-use=/builddir/.../merged.profdata)
 # into Makefile.global. PGXS extensions then fail to compile because that
