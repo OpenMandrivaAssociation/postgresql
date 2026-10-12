@@ -1,6 +1,2 @@
-# Workaround for a postgresql bug -- the -server %preun is incorrectly
-# seen as empty.
-addFilter("E: empty-%preun")
-addFilter("E: shared-lib-without-dependency-information")
 # Server modules live in /usr/lib/postgresql, including on 64-bit.
 addFilter("hardcoded-library-path")
