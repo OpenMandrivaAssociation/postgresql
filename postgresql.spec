@@ -31,14 +31,19 @@
 # PostgreSQL modules are allergic to -Wl,--no-undefined
 %global _disable_ld_no_undefined 1
 
-#define beta rc1
-%define fsversion %{version}%{?beta:%{beta}}
-# For versions tagged x.y.0: %(echo %{version} |sed -e 's,\.0$,,')%{beta}
+%define beta rc2
+# Upstream tags the first stable tarball 19.0 and the candidate 19rc2.
+# Beta tags are only used on x.0 (19.0 + rc2 -> 19rc2).
+%if "%{?beta}" != ""
+%define fsversion %(echo %{version} | cut -d. -f1)%{beta}
+%else
+%define fsversion %{version}
+%endif
 
 Summary:	PostgreSQL client programs and libraries
 Name:		postgresql
-Version:	18.6
-Release:	%{?beta:0.%{beta}.}10
+Version:	19.0
+Release:	%{?beta:0.%{beta}.}1
 License:	BSD
 Group:		Databases
 URL:		https://www.postgresql.org/ 
@@ -609,7 +614,7 @@ find %{buildroot} -type f -name "*.a" -exec rm -f {} ';'
 
 # We insert this here instead of patching the config template so the
 # test suite won't be affected -- it wants more traditional settings
-sed -i -e 's,^#jit = on,jit = on,' %{buildroot}%{_datadir}/postgresql/postgresql.conf.sample
+sed -i -e 's,^#jit = off,jit = on,' %{buildroot}%{_datadir}/postgresql/postgresql.conf.sample
 sed -i -e '/# - Disk -/aio_method = io_uring' %{buildroot}%{_datadir}/postgresql/postgresql.conf.sample
 
 # See triggerpostun near the bottom of the file
@@ -647,7 +652,7 @@ omv.dir2Symlink("/var/lib/pgsql", "/srv/pgsql")
 %{_bindir}/pg_createsubscriber
 %{_bindir}/pg_walsummary
 %{_datadir}/postgresql
-%{_libdir}/libpq-oauth-18.so
+%{_libdir}/libpq-oauth.so
 %{_mandir}/man1/clusterdb.*
 %{_mandir}/man1/createdb.*
 %{_mandir}/man1/createuser.*
@@ -714,6 +719,8 @@ omv.dir2Symlink("/var/lib/pgsql", "/srv/pgsql")
 %{_libdir}/postgresql/pg_visibility.so
 %{_libdir}/postgresql/pg_logicalinspect.so
 %{_libdir}/postgresql/pg_overexplain.so
+%{_libdir}/postgresql/pg_plan_advice.so
+%{_libdir}/postgresql/pg_stash_advice.so
 %{_libdir}/postgresql/pgoutput.so
 %{_libdir}/postgresql/pgrowlocks.so
 %{_libdir}/postgresql/sepgsql.so
@@ -782,6 +789,7 @@ omv.dir2Symlink("/var/lib/pgsql", "/srv/pgsql")
 %{_libdir}/postgresql/euc2004_sjis2004.so
 %{_libdir}/postgresql/file_fdw.so
 %{_libdir}/postgresql/libpqwalreceiver.so
+%{_libdir}/postgresql/pgrepack.so
 %{_libdir}/postgresql/passwordcheck.so
 %{_libdir}/postgresql/pg_stat_statements.so
 %{_libdir}/postgresql/pgxml.so
@@ -864,7 +872,8 @@ omv.dir2Symlink("/var/lib/pgsql", "/srv/pgsql")
 
 %pretrans server
 # Postgres major updates usually require a full dump and restore...
-OLDMAJOR="$(pg_dumpall --version 2>/dev/null |cut -d' ' -f3 |cut -d. -f1)"
+# 19rc2 has no dot. Take the leading number so 18.6 and 19rc2 both compare.
+OLDMAJOR="$(pg_dumpall --version 2>/dev/null | sed -n 's/.* \([0-9][0-9]*\).*/\1/p')"
 if [ -n "$OLDMAJOR" -a "0$OLDMAJOR" -lt %{majorversion} ]; then
 	echo "This is a major update from $OLDMAJOR to %{majorversion}"
 	if [ "$OLDMAJOR" -le 16 ]; then
@@ -898,7 +907,7 @@ EOF
 	mv %{pgdata}/data-from-%{majorversion} %{pgdata}/data
 fi
 # Upgrading is handled in postgresql_initdb.sh on next startup
-UPDIR="$(ls -1d %{pgdata}/update-from-*-to-%{majorversion} |head -n1 2>/dev/null)"
+UPDIR="$(ls -1d %{pgdata}/update-from-*-to-%{majorversion} 2>/dev/null |head -n1)"
 if [ -e "$UPDIR/.was-enabled" ]; then
 	systemctl enable --now postgresql
 elif [ -e "$UPDIR/.was-running" ]; then

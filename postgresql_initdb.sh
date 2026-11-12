@@ -17,8 +17,9 @@ if [ ! -f ${PGDATA}/PG_VERSION ]; then
 	RETVAL=$?
 
 	# Check if we're updating
-	MAJORVERSION="$(postgres --version |cut -d' ' -f3 |cut -d. -f1)"
-	UPDIR="$(ls -1d @PGDIR@/update-from-*-to-${MAJORVERSION} |head -n1 2>/dev/null)"
+	# 19.0 is "19.0"; 19rc2 is "19rc2". The dump directory uses the major number.
+	MAJORVERSION="$(postgres --version | sed -n 's/.* \([0-9][0-9]*\).*/\1/p')"
+	UPDIR="$(ls -1d @PGDIR@/update-from-*-to-${MAJORVERSION} 2>/dev/null |head -n1)"
 	if [ -d "$UPDIR" ]; then
 		OLDMAJOR=$(echo $UPDIR |sed -e 's,.*update-from-,,;s,-.*,,')
 		echo "Resuming update from ${OLDMAJOR} to ${MAJORVERSION}"

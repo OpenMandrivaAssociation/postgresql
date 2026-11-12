@@ -1,9 +1,6 @@
-diff -up postgresql-16rc1/src/backend/utils/misc/guc.c.1~ postgresql-16rc1/src/backend/utils/misc/guc.c
-diff -up postgresql-16rc1/src/bin/initdb/initdb.c.1~ postgresql-16rc1/src/bin/initdb/initdb.c
-diff -up postgresql-16rc1/src/include/pg_config_manual.h.1~ postgresql-16rc1/src/include/pg_config_manual.h
---- postgresql-16rc1/src/include/pg_config_manual.h.1~	2023-08-28 22:26:56.000000000 +0200
-+++ postgresql-16rc1/src/include/pg_config_manual.h	2023-08-31 22:56:10.826151129 +0200
-@@ -206,7 +206,7 @@
+--- a/src/include/pg_config_manual.h
++++ b/src/include/pg_config_manual.h
+@@ -195,7 +195,7 @@
   * support them yet.
   */
  #ifndef WIN32
