@@ -57,7 +57,6 @@ Source16:	postgresql-preload.sh
 
 Source100:	%name.rpmlintrc
 Patch1:		postgresql-run-socket.patch
-Patch2:		postgresql-config-tweaks.patch
 Patch3:		postgresql-pgo-bitcode.patch
 BuildRequires:	meson
 BuildRequires:	bison
@@ -613,8 +612,9 @@ find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
 find %{buildroot} -type f -name "*.a" -exec rm -f {} ';'
 
 # We insert this here instead of patching the config template so the
-# test suite won't be affected -- it wants more traditional settings
+# test suite won't be affected -- it wants every sample line commented.
 sed -i -e 's,^#jit = off,jit = on,' %{buildroot}%{_datadir}/postgresql/postgresql.conf.sample
+sed -i -e 's,^#wal_compression = off,wal_compression = zstd,' %{buildroot}%{_datadir}/postgresql/postgresql.conf.sample
 sed -i -e '/# - Disk -/aio_method = io_uring' %{buildroot}%{_datadir}/postgresql/postgresql.conf.sample
 
 # See triggerpostun near the bottom of the file
