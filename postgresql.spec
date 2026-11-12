@@ -514,6 +514,8 @@ cat pg_controldata-%{majorversion}.lang >> server.lst
 cat pg_ctl-%{majorversion}.lang >> server.lst
 %find_lang postgres-%{majorversion}
 cat postgres-%{majorversion}.lang >> server.lst
+%find_lang postgresql-regress-%{majorversion}
+cat postgresql-regress-%{majorversion}.lang >> server.lst
 %find_lang pg_rewind-%{majorversion}
 cat pg_rewind-%{majorversion}.lang >>server.lst
 %find_lang pg_archivecleanup-%{majorversion}
@@ -786,6 +788,7 @@ omv.dir2Symlink("/var/lib/pgsql", "/srv/pgsql")
 %{_libdir}/postgresql/dict_int.so
 %{_libdir}/postgresql/dict_snowball.so
 %{_libdir}/postgresql/dict_xsyn.so
+%{_libdir}/postgresql/cyrillic.so
 %{_libdir}/postgresql/euc2004_sjis2004.so
 %{_libdir}/postgresql/file_fdw.so
 %{_libdir}/postgresql/libpqwalreceiver.so
