@@ -81,7 +81,6 @@ BuildRequires:	pkgconfig(libselinux)
 BuildRequires:	pkgconfig(libsystemd)
 BuildRequires:	perl(IPC::Run)
 BuildRequires:	perl(Test::More)
-BuildRequires:	rpm-helper
 BuildRequires:	systemd
 BuildRequires:	gettext-devel
 BuildRequires:	pkgconfig(uuid)
@@ -103,6 +102,7 @@ BuildRequires:	docbook-style-xsl
 
 Provides:	postgresql-clients = %{version}-%{release}
 #Requires:	perl
+Requires:	%{libname} = %{EVRD}
 
 %description
 PostgreSQL is an advanced Object-Relational database management system (DBMS)
@@ -149,12 +149,8 @@ Group:		Databases
 Provides:	sqlserver
 Provides:	postgresql-server = %{version}-%{release}
 Provides:	postgresql-preload-d
-# add/remove services
-Requires(post):	rpm-helper
-Requires(preun):	rpm-helper
-# add/del user
-Requires(pre,postun):	rpm-helper
-Requires(post,preun):	chkconfig
+# Make sure we have the right version of libraries
+Requires:	%{libname} = %{EVRD}
 # the client bins are needed for upgrading
 Requires:	postgresql >= %{version}-%{release}
 Requires:	postgresql-plpgsql >= %{version}-%{release}
@@ -183,6 +179,7 @@ project, or if you want to generate printed documentation.
 Summary:	Contributed binaries distributed with PostgreSQL
 Group:		Databases
 #Requires:	postgresql-server >= %{version}-%{release}
+Requires:	%{libname} = %{EVRD}
 
 %description -n %{contrib}
 The postgresql-contrib package includes the contrib tree distributed with the
