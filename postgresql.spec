@@ -154,6 +154,7 @@ Requires:	%{libname} = %{EVRD}
 # the client bins are needed for upgrading
 Requires:	postgresql >= %{version}-%{release}
 Requires:	postgresql-plpgsql >= %{version}-%{release}
+Conflicts:	%{name}-contrib < %{EVRD}
 
 %description -n %{server}
 The postgresql-server package includes the programs needed to create and run a
