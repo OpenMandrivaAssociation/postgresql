@@ -31,7 +31,7 @@
 # PostgreSQL modules are allergic to -Wl,--no-undefined
 %global _disable_ld_no_undefined 1
 
-%define beta rc2
+#define beta rc2
 # Upstream tags the first stable tarball 19.0 and the candidate 19rc2.
 # Beta tags are only used on x.0 (19.0 + rc2 -> 19rc2).
 %if "%{?beta}" != ""
